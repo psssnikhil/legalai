@@ -6,10 +6,8 @@ import { useSession, signOut } from 'next-auth/react'
 import {
   Home,
   FileText,
-  Search,
   Users,
   Settings,
-  HelpCircle,
   ChevronLeft,
   ChevronRight,
   Scale,
@@ -17,20 +15,27 @@ import {
   BookOpen,
   MessageSquare,
   LogOut,
-  User
+  User,
+  Mic,
+  Calendar,
+  Briefcase
 } from 'lucide-react'
 
 const menuItems = [
   { name: 'Dashboard', icon: Home, href: '/', active: false },
   { name: 'AI Case Intake', icon: MessageSquare, href: '/ai-case-intake', active: false },
-  { name: 'AI Case Assistant', icon: Brain, href: '/ai-case-assistant', active: true },
-  { name: 'Document Analysis', icon: FileText, href: '/documents' },
-  { name: 'Legal Research', icon: Search, href: '/research' },
-  { name: 'Case Management', icon: Scale, href: '/cases' },
-  { name: 'Knowledge Base', icon: BookOpen, href: '/knowledge' },
-  { name: 'Team', icon: Users, href: '/team' },
-  { name: 'Settings', icon: Settings, href: '/settings' },
-  { name: 'Help', icon: HelpCircle, href: '/help' },
+  { name: 'AI Case Assistant', icon: Brain, href: '/ai-case-assistant', active: false },
+  { name: 'AI Drafting', icon: FileText, href: '/ai-drafting', active: false },
+  { name: 'Cases', icon: Briefcase, href: '/cases', active: false },
+  { name: 'Court Diary', icon: Calendar, href: '/court-diary', active: false },
+  { name: 'Clients', icon: Users, href: '/clients', active: false },
+  { name: 'Documents', icon: FileText, href: '/documents', active: false },
+  { name: 'Legal Library', icon: BookOpen, href: '/legal-library', active: false },
+  { name: 'Legal Library Chat', icon: MessageSquare, href: '/legal-library-chat', active: false },
+]
+
+const adminMenuItems = [
+  { name: 'Company Settings', icon: Settings, href: '/company-settings', active: false },
 ]
 
 export default function Sidebar() {
@@ -65,7 +70,7 @@ export default function Sidebar() {
       </div>
 
       {/* Navigation */}
-      <nav className="p-4 space-y-1">
+      <nav className="p-4 space-y-1 flex-1 overflow-y-auto">
         {menuItems.map((item) => (
           <Link
             key={item.name}
@@ -76,6 +81,27 @@ export default function Sidebar() {
             {!collapsed && <span>{item.name}</span>}
           </Link>
         ))}
+
+        {/* Admin Section */}
+        {!collapsed && (
+          <div className="pt-4 mt-4 border-t border-gray-200">
+            <div className="px-2 mb-2">
+              <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                Admin
+              </span>
+            </div>
+            {adminMenuItems.map((item) => (
+              <Link
+                key={item.name}
+                href={item.href}
+                className={`sidebar-item ${item.active ? 'active' : ''}`}
+              >
+                <item.icon className="w-5 h-5 flex-shrink-0" />
+                <span>{item.name}</span>
+              </Link>
+            ))}
+          </div>
+        )}
       </nav>
 
       {/* User Profile */}
