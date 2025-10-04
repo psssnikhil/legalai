@@ -1,0 +1,31 @@
+{
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+  
+  // Next.js specific
+  "files.watcherExclude": {
+    "**/.git/objects/**": true,
+    "**/.git/subtree-cache/**": true,
+    "**/node_modules/**": true,
+    "**/.next/**": true
+  },
+  
+  // Enable console logs highlighting
+  "workbench.colorCustomizations": {
+    "[*Dark*]": {
+      "terminal.ansiBlack": "#000000",
+      "terminal.ansiRed": "#ff6b6b",
+      "terminal.ansiGreen": "#51cf66",
+      "terminal.ansiYellow": "#ffd43b",
+      "terminal.ansiBlue": "#74c0fc",
+      "terminal.ansiMagenta": "#cc5de8",
+      "terminal.ansiCyan": "#3bc9db",
+      "terminal.ansiWhite": "#f8f9fa"
+    }
+  }
+}
+
