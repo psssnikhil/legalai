@@ -4,7 +4,6 @@ import { useSession } from 'next-auth/react'
 import { useRouter, usePathname } from 'next/navigation'
 import { useEffect } from 'react'
 import { Scale } from 'lucide-react'
-import Sidebar from './Sidebar'
 
 export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const { data: session, status } = useSession()
@@ -35,7 +34,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
     )
   }
 
-  // If on auth page, render children directly
+  // If on auth page, render children directly without layout
   if (isAuthPage) {
     return <>{children}</>
   }
@@ -54,13 +53,6 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
     )
   }
 
-  // If authenticated, show the main layout with sidebar
-  return (
-    <div className="flex h-screen bg-gray-50">
-      <Sidebar />
-      <main className="flex-1 overflow-auto">
-        {children}
-      </main>
-    </div>
-  )
+  // If authenticated, just render children (layout.tsx will handle Sidebar)
+  return <>{children}</>
 }

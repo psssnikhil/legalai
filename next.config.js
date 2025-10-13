@@ -20,7 +20,7 @@ const nextConfig = {
   // Development options
   ...(process.env.NODE_ENV === 'development' && {
     // Disable telemetry in development
-    telemetry: false,
+    // telemetry: false,
   }),
 }
 
