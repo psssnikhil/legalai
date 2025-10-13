@@ -134,71 +134,73 @@ export default function ClientsPage() {
 
     if (loading) {
         return (
-            <div className="legal-page">
-                <PageHeader
-                    title="Clients"
-                    description="Manage your client relationships and cases"
-                    icon={Users}
-                />
-                <div className="p-6">
-                    <div className="legal-container">
-                        <Card>
-                            <div className="text-center py-12">
-                                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-                                <p className="mt-4 text-slate-600">Loading clients...</p>
-                            </div>
-                        </Card>
+            <div className="min-h-screen legal-gradient-mesh flex items-center justify-center">
+                <div className="text-center">
+                    <div className="inline-flex p-5 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-3xl mb-4">
+                        <div className="animate-spin rounded-full h-12 w-12 border-4 border-indigo-600 border-t-transparent"></div>
                     </div>
+                    <p className="text-lg font-bold text-slate-900">Loading clients...</p>
                 </div>
             </div>
         )
     }
 
     return (
-        <div className="legal-page">
-            <PageHeader
-                title="Integrated Client Management"
-                description="Complete client lifecycle with connected case, document, and research management"
-                icon={Users}
-                badge={{ text: `${clients.length} Clients`, variant: 'slate' }}
-                actions={
-                    <Button variant="primary" icon={Plus} onClick={() => setIsAddModalOpen(true)}>
+        <div className="min-h-screen legal-gradient-mesh">
+            <div className="p-4 sm:p-6 lg:p-8 space-y-6 sm:space-y-8 max-w-[1920px] mx-auto">
+                {/* Premium Header */}
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                    <div className="space-y-2">
+                        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900">
+                            Client <span className="text-gradient-indigo">Management</span>
+                        </h1>
+                        <p className="text-base sm:text-lg text-slate-600 font-medium">
+                            Complete client lifecycle with integrated case & document management
+                        </p>
+                    </div>
+                    <button
+                        onClick={() => setIsAddModalOpen(true)}
+                        className="group px-4 sm:px-6 py-2.5 legal-gradient-indigo text-white rounded-xl hover:shadow-2xl hover:shadow-indigo-500/30 transition-all duration-300 flex items-center gap-2 text-sm sm:text-base font-bold hover:scale-105"
+                    >
+                        <Plus className="w-4 h-4 sm:w-5 sm:h-5 group-hover:rotate-90 transition-transform duration-300" />
                         Add Client
-                    </Button>
-                }
-            />
+                    </button>
+                </div>
 
-            <div className="p-6">
-                <div className="legal-container space-y-6">
+                <div className="space-y-6 sm:space-y-8">
                     {error && (
-                        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-                            {error}
+                        <div className="premium-card p-4 border-rose-200 bg-gradient-to-r from-rose-50 to-rose-100">
+                            <p className="text-rose-700 font-semibold">{error}</p>
                         </div>
                     )}
 
-                    {/* Stats Dashboard */}
-                    <Card>
-                        <div className="mb-6">
-                            <div className="flex items-center gap-2 text-purple-600 mb-2">
-                                <Briefcase className="w-5 h-5" />
-                                <h3 className="font-semibold">Integrated Client Services Dashboard</h3>
+                    {/* Premium Stats Dashboard */}
+                    <div className="premium-card p-6 sm:p-8">
+                        <div className="mb-6 sm:mb-8">
+                            <div className="flex items-center gap-3 mb-2">
+                                <div className="p-2.5 bg-gradient-to-br from-purple-500/10 to-indigo-500/10 rounded-xl">
+                                    <Briefcase className="w-6 h-6 text-purple-600" strokeWidth={2.5} />
+                                </div>
+                                <h3 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                                    Client Services Overview
+                                </h3>
                             </div>
-                            <p className="text-sm text-slate-600">
-                                Connect clients with cases, documents, court schedules, and AI research
+                            <p className="text-sm sm:text-base text-slate-600 font-medium">
+                                Integrated case, document, and research management
                             </p>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                             {stats.map((stat, index) => (
-                                <div key={index} className="text-center">
-                                    <div className={`w-12 h-12 ${stat.iconBgColor} rounded-xl flex items-center justify-center mx-auto mb-3`}>
-                                        <stat.icon className={`w-6 h-6 ${stat.iconColor}`} />
+                                <div key={index} className="group text-center p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-slate-50 to-white border border-slate-200 hover:shadow-xl hover:border-slate-300 hover:-translate-y-1 transition-all duration-300">
+                                    <div className={`w-12 h-12 sm:w-14 sm:h-14 ${stat.iconBgColor} rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform duration-300`}>
+                                        <stat.icon className={`w-6 h-6 sm:w-7 sm:h-7 ${stat.iconColor}`} strokeWidth={2.5} />
                                     </div>
-                                    <div className="text-3xl font-bold text-slate-900 mb-1">{stat.value}</div>
-                                    <div className="text-sm text-slate-600">{stat.label}</div>
+                                    <div className="text-3xl sm:text-4xl font-black text-slate-900 mb-1 tracking-tight">{stat.value}</div>
+                                    <div className="text-xs sm:text-sm text-slate-600 font-semibold">{stat.label}</div>
                                 </div>
                             ))}
                         </div>
-                    </Card>
+                    </div>
 
                     {/* Search and Filter */}
                     <div className="flex flex-col sm:flex-row gap-4">
@@ -224,98 +226,111 @@ export default function ClientsPage() {
                         onChange={setActiveTab}
                     />
 
-                    {/* Clients Grid */}
+                    {/* Premium Clients Grid */}
                     {filteredClients.length === 0 ? (
-                        <Card>
-                            <EmptyState
-                                icon={Users}
-                                title={clients.length === 0 ? "No clients yet" : "No clients found"}
-                                description={clients.length === 0 ? "Get started by adding your first client" : "Try adjusting your search criteria or filters"}
-                                action={{
-                                    label: 'Add Client',
-                                    onClick: () => setIsAddModalOpen(true),
-                                    icon: Plus
-                                }}
-                            />
-                        </Card>
+                        <div className="premium-card p-12 sm:p-16">
+                            <div className="text-center">
+                                <div className="inline-flex p-5 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-3xl mb-4">
+                                    <Users className="w-12 h-12 sm:w-14 sm:h-14 text-indigo-600" strokeWidth={2.5} />
+                                </div>
+                                <p className="text-xl font-black text-slate-900 mb-2">
+                                    {clients.length === 0 ? "No clients yet" : "No clients found"}
+                                </p>
+                                <p className="text-sm sm:text-base text-slate-600 font-medium mb-6">
+                                    {clients.length === 0 ? "Get started by adding your first client" : "Try adjusting your search criteria or filters"}
+                                </p>
+                                <button
+                                    onClick={() => setIsAddModalOpen(true)}
+                                    className="group px-6 py-3 legal-gradient-indigo text-white rounded-xl hover:shadow-2xl hover:shadow-indigo-500/30 transition-all duration-300 inline-flex items-center gap-2 font-bold hover:scale-105"
+                                >
+                                    <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
+                                    Add Client
+                                </button>
+                            </div>
+                        </div>
                     ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                             {filteredClients.map((client) => (
-                                <Card
+                                <div
                                     key={client.id}
-                                    hover
-                                    className="relative cursor-pointer"
+                                    className="group relative premium-card p-5 sm:p-6 cursor-pointer overflow-hidden"
                                     onClick={() => handleClientClick(client.id)}
                                 >
-                                    {/* Header */}
-                                    <div className="flex items-start justify-between mb-4">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
-                                                <User className="w-6 h-6 text-white" />
-                                            </div>
-                                            <div>
-                                                <h3 className="font-semibold text-slate-900">{client.name}</h3>
-                                                <Badge variant="slate" className="mt-1">
-                                                    {client.clientType}
-                                                </Badge>
-                                            </div>
-                                        </div>
-                                        <Badge variant={client.status === 'ACTIVE' ? 'success' : client.status === 'INACTIVE' ? 'warning' : 'default'} dot>
-                                            {client.status}
-                                        </Badge>
-                                    </div>
+                                    {/* Gradient Overlay */}
+                                    <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/0 to-purple-500/0 group-hover:from-indigo-500/5 group-hover:to-purple-500/5 transition-all duration-300"></div>
 
-                                    {/* Company */}
-                                    {client.company && (
-                                        <div className="flex items-center gap-2 text-sm text-slate-600 mb-3 pb-3 border-b border-slate-100">
-                                            <Briefcase className="w-4 h-4 text-slate-400" />
-                                            <span className="truncate">{client.company}</span>
+                                    {/* Content */}
+                                    <div className="relative z-10">
+                                        {/* Header */}
+                                        <div className="flex items-start justify-between mb-4">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-12 h-12 legal-gradient-indigo rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                                                    <User className="w-6 h-6 text-white" strokeWidth={2.5} />
+                                                </div>
+                                                <div>
+                                                    <h3 className="font-black text-slate-900 text-base sm:text-lg tracking-tight">{client.name}</h3>
+                                                    <span className="inline-block mt-1 text-xs font-bold px-2.5 py-1 rounded-full bg-slate-100 text-slate-700">
+                                                        {client.clientType}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <span className={`text-xs font-black px-3 py-1.5 rounded-lg ${client.status === 'ACTIVE' ? 'bg-emerald-600 text-white' : client.status === 'INACTIVE' ? 'bg-amber-600 text-white' : 'bg-slate-600 text-white'}`}>
+                                                {client.status}
+                                            </span>
                                         </div>
-                                    )}
 
-                                    {/* Contact Info */}
-                                    <div className="space-y-2 mb-4">
-                                        <div className="flex items-center gap-2 text-sm text-slate-600">
-                                            <Mail className="w-4 h-4 text-slate-400 flex-shrink-0" />
-                                            <span className="truncate">{client.email}</span>
-                                        </div>
-                                        <div className="flex items-center gap-2 text-sm text-slate-600">
-                                            <Phone className="w-4 h-4 text-slate-400 flex-shrink-0" />
-                                            <span>{client.phone}</span>
-                                        </div>
-                                        {client.address && (
-                                            <div className="flex items-center gap-2 text-sm text-slate-600">
-                                                <MapPin className="w-4 h-4 text-slate-400 flex-shrink-0" />
-                                                <span className="truncate">{client.address}</span>
+                                        {/* Company */}
+                                        {client.company && (
+                                            <div className="flex items-center gap-2 text-sm font-semibold text-slate-700 mb-3 pb-3 border-b border-slate-200">
+                                                <Briefcase className="w-4 h-4 text-slate-500" strokeWidth={2.5} />
+                                                <span className="truncate">{client.company}</span>
                                             </div>
                                         )}
-                                    </div>
 
-                                    {/* Stats Grid */}
-                                    <div className="grid grid-cols-2 gap-3 pt-4 border-t border-slate-100">
-                                        <div className="text-center bg-emerald-50 rounded-lg p-3">
-                                            <Briefcase className="w-4 h-4 text-emerald-600 mx-auto mb-1" />
-                                            <p className="text-lg font-bold text-emerald-600">{client.activeCases}</p>
-                                            <p className="text-xs text-slate-600">Active Cases</p>
+                                        {/* Contact Info */}
+                                        <div className="space-y-2.5 mb-4">
+                                            <div className="flex items-center gap-2 text-sm font-medium text-slate-600">
+                                                <Mail className="w-4 h-4 text-slate-400 flex-shrink-0" strokeWidth={2.5} />
+                                                <span className="truncate">{client.email}</span>
+                                            </div>
+                                            <div className="flex items-center gap-2 text-sm font-medium text-slate-600">
+                                                <Phone className="w-4 h-4 text-slate-400 flex-shrink-0" strokeWidth={2.5} />
+                                                <span>{client.phone}</span>
+                                            </div>
+                                            {client.address && (
+                                                <div className="flex items-center gap-2 text-sm font-medium text-slate-600">
+                                                    <MapPin className="w-4 h-4 text-slate-400 flex-shrink-0" strokeWidth={2.5} />
+                                                    <span className="truncate">{client.address}</span>
+                                                </div>
+                                            )}
                                         </div>
-                                        <div className="text-center bg-purple-50 rounded-lg p-3">
-                                            <FileText className="w-4 h-4 text-purple-600 mx-auto mb-1" />
-                                            <p className="text-lg font-bold text-purple-600">{client.totalDocuments || 0}</p>
-                                            <p className="text-xs text-slate-600">Documents</p>
-                                        </div>
-                                    </div>
 
-                                    {/* Footer */}
-                                    <div className="mt-4 pt-4 border-t border-slate-100">
-                                        <p className="text-xs text-slate-500">
-                                            Client since {new Date(client.createdAt).toLocaleDateString('en-US', {
-                                                month: 'short',
-                                                day: 'numeric',
-                                                year: 'numeric'
-                                            })}
-                                        </p>
+                                        {/* Premium Stats Grid */}
+                                        <div className="grid grid-cols-2 gap-3 pt-4 border-t border-slate-200">
+                                            <div className="text-center bg-gradient-to-br from-emerald-50 to-emerald-100/50 rounded-xl p-3 border border-emerald-200">
+                                                <Briefcase className="w-4 h-4 text-emerald-600 mx-auto mb-1" strokeWidth={2.5} />
+                                                <p className="text-xl font-black text-emerald-600">{client.activeCases}</p>
+                                                <p className="text-xs text-slate-600 font-semibold">Active Cases</p>
+                                            </div>
+                                            <div className="text-center bg-gradient-to-br from-purple-50 to-purple-100/50 rounded-xl p-3 border border-purple-200">
+                                                <FileText className="w-4 h-4 text-purple-600 mx-auto mb-1" strokeWidth={2.5} />
+                                                <p className="text-xl font-black text-purple-600">{client.totalDocuments || 0}</p>
+                                                <p className="text-xs text-slate-600 font-semibold">Documents</p>
+                                            </div>
+                                        </div>
+
+                                        {/* Footer */}
+                                        <div className="mt-4 pt-4 border-t border-slate-200">
+                                            <p className="text-xs text-slate-500 font-medium">
+                                                Client since {new Date(client.createdAt).toLocaleDateString('en-US', {
+                                                    month: 'short',
+                                                    day: 'numeric',
+                                                    year: 'numeric'
+                                                })}
+                                            </p>
+                                        </div>
                                     </div>
-                                </Card>
+                                </div>
                             ))}
                         </div>
                     )}

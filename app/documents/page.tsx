@@ -298,40 +298,44 @@ export default function DocumentsPage() {
     ]
 
     return (
-        <div className="legal-page">
-            <PageHeader
-                title="Documents"
-                description="Manage and organize your legal documents"
-                icon={FileText}
-                badge={{ text: `${stats.total} Documents`, variant: 'slate' }}
-                actions={
-                    <>
-                        <Button variant="outline" size="md">
+        <div className="min-h-screen legal-gradient-mesh">
+            <div className="p-4 sm:p-6 lg:p-8 space-y-6 sm:space-y-8 max-w-[1920px] mx-auto">
+                {/* Premium Header */}
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                    <div className="space-y-2">
+                        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900">
+                            Document <span className="text-gradient-indigo">Hub</span>
+                        </h1>
+                        <p className="text-base sm:text-lg text-slate-600 font-medium">
+                            Manage & analyze legal documents with AI-powered insights
+                        </p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                        <button className="group px-4 sm:px-5 py-2.5 bg-white/80 backdrop-blur-sm border border-slate-200 rounded-xl hover:bg-white hover:border-slate-300 hover:shadow-lg transition-all duration-300 flex items-center gap-2 text-sm sm:text-base font-semibold text-slate-700 hover:text-slate-900">
+                            <Download className="w-4 h-4 sm:w-5 sm:h-5 group-hover:scale-110 transition-transform" />
                             Export
-                        </Button>
-                        <Button
-                            variant="primary"
-                            icon={Plus}
+                        </button>
+                        <button
                             onClick={() => setShowUploadModal(true)}
+                            className="group px-4 sm:px-6 py-2.5 legal-gradient-indigo text-white rounded-xl hover:shadow-2xl hover:shadow-indigo-500/30 transition-all duration-300 flex items-center gap-2 text-sm sm:text-base font-bold hover:scale-105"
                         >
+                            <Plus className="w-4 h-4 sm:w-5 sm:h-5 group-hover:rotate-90 transition-transform duration-300" />
                             Upload Document
-                        </Button>
-                    </>
-                }
-            />
+                        </button>
+                    </div>
+                </div>
 
-            <div className="p-6">
-                <div className="legal-container space-y-6">
-                    {/* Stats */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="space-y-6 sm:space-y-8">
+                    {/* Premium Stats */}
+                    <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                         {statCards.map((stat, index) => (
                             <StatCard key={index} {...stat} />
                         ))}
                     </div>
 
-                    {/* Search, Filter and Sort */}
-                    <Card>
-                        <div className="space-y-4">
+                    {/* Premium Search & Filter */}
+                    <div className="premium-card p-6 sm:p-8">
+                        <div className="space-y-5">
                             <div className="flex flex-col md:flex-row gap-4">
                                 <div className="flex-1">
                                     <SearchBar
@@ -351,77 +355,77 @@ export default function DocumentsPage() {
                                 </Select>
                             </div>
 
-                            {/* Quick Filters */}
+                            {/* Premium Quick Filters */}
                             <div className="flex flex-wrap gap-2">
                                 <button
                                     onClick={() => setFilterType('all')}
-                                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${filterType === 'all'
-                                            ? 'bg-indigo-100 text-indigo-700'
-                                            : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                                    className={`px-4 py-2 rounded-xl text-sm font-bold transition-all duration-300 ${filterType === 'all'
+                                        ? 'legal-gradient-indigo text-white shadow-lg shadow-indigo-500/30'
+                                        : 'bg-slate-100 text-slate-700 hover:bg-slate-200 hover:shadow-md'
                                         }`}
                                 >
                                     All
                                 </button>
                                 <button
                                     onClick={() => setFilterType('case')}
-                                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${filterType === 'case'
-                                            ? 'bg-indigo-100 text-indigo-700'
-                                            : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                                    className={`px-4 py-2 rounded-xl text-sm font-bold transition-all duration-300 flex items-center gap-2 ${filterType === 'case'
+                                        ? 'legal-gradient-indigo text-white shadow-lg shadow-indigo-500/30'
+                                        : 'bg-slate-100 text-slate-700 hover:bg-slate-200 hover:shadow-md'
                                         }`}
                                 >
-                                    <Briefcase className="w-3.5 h-3.5 inline mr-1.5" />
+                                    <Briefcase className="w-4 h-4" strokeWidth={2.5} />
                                     Linked to Cases
                                 </button>
                                 <button
                                     onClick={() => setFilterType('client')}
-                                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${filterType === 'client'
-                                            ? 'bg-indigo-100 text-indigo-700'
-                                            : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                                    className={`px-4 py-2 rounded-xl text-sm font-bold transition-all duration-300 flex items-center gap-2 ${filterType === 'client'
+                                        ? 'legal-gradient-indigo text-white shadow-lg shadow-indigo-500/30'
+                                        : 'bg-slate-100 text-slate-700 hover:bg-slate-200 hover:shadow-md'
                                         }`}
                                 >
-                                    <Users className="w-3.5 h-3.5 inline mr-1.5" />
+                                    <Users className="w-4 h-4" strokeWidth={2.5} />
                                     Linked to Clients
                                 </button>
                                 <button
                                     onClick={() => setFilterType('unlinked')}
-                                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${filterType === 'unlinked'
-                                            ? 'bg-indigo-100 text-indigo-700'
-                                            : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                                    className={`px-4 py-2 rounded-xl text-sm font-bold transition-all duration-300 ${filterType === 'unlinked'
+                                        ? 'legal-gradient-indigo text-white shadow-lg shadow-indigo-500/30'
+                                        : 'bg-slate-100 text-slate-700 hover:bg-slate-200 hover:shadow-md'
                                         }`}
                                 >
                                     Unlinked
                                 </button>
-                                <div className="w-px bg-slate-200 mx-1"></div>
+                                <div className="w-px bg-slate-300 mx-1"></div>
                                 <button
                                     onClick={() => setFilterType('pdf')}
-                                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${filterType === 'pdf'
-                                            ? 'bg-red-100 text-red-700'
-                                            : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                                    className={`px-4 py-2 rounded-xl text-sm font-bold transition-all duration-300 ${filterType === 'pdf'
+                                        ? 'bg-gradient-to-r from-rose-600 to-red-600 text-white shadow-lg shadow-rose-500/30'
+                                        : 'bg-slate-100 text-slate-700 hover:bg-slate-200 hover:shadow-md'
                                         }`}
                                 >
                                     PDF
                                 </button>
                                 <button
                                     onClick={() => setFilterType('word')}
-                                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${filterType === 'word'
-                                            ? 'bg-blue-100 text-blue-700'
-                                            : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                                    className={`px-4 py-2 rounded-xl text-sm font-bold transition-all duration-300 ${filterType === 'word'
+                                        ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/30'
+                                        : 'bg-slate-100 text-slate-700 hover:bg-slate-200 hover:shadow-md'
                                         }`}
                                 >
                                     Word
                                 </button>
                                 <button
                                     onClick={() => setFilterType('image')}
-                                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${filterType === 'image'
-                                            ? 'bg-green-100 text-green-700'
-                                            : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                                    className={`px-4 py-2 rounded-xl text-sm font-bold transition-all duration-300 ${filterType === 'image'
+                                        ? 'bg-gradient-to-r from-emerald-600 to-green-600 text-white shadow-lg shadow-emerald-500/30'
+                                        : 'bg-slate-100 text-slate-700 hover:bg-slate-200 hover:shadow-md'
                                         }`}
                                 >
                                     Images
                                 </button>
                             </div>
                         </div>
-                    </Card>
+                    </div>
 
                     {/* Results Count */}
                     {!loading && (searchQuery || filterType !== 'all') && (
@@ -443,24 +447,32 @@ export default function DocumentsPage() {
                         </div>
                     )}
 
-                    {/* Documents Table */}
-                    <Card padding="none">
+                    {/* Premium Documents Table */}
+                    <div className="premium-card overflow-hidden p-0">
                         {loading ? (
                             <div className="p-12 text-center">
-                                <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-slate-300 border-r-transparent"></div>
-                                <p className="mt-4 text-slate-600">Loading documents...</p>
+                                <div className="inline-flex p-5 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-3xl mb-4">
+                                    <div className="animate-spin rounded-full h-12 w-12 border-4 border-indigo-600 border-t-transparent"></div>
+                                </div>
+                                <p className="text-lg font-bold text-slate-900">Loading documents...</p>
                             </div>
                         ) : filteredDocuments.length === 0 ? (
-                            <EmptyState
-                                icon={FileText}
-                                title="No documents found"
-                                description={searchQuery || filterType !== 'all' ? "Try adjusting your search or filter criteria" : "Upload your first document to get started"}
-                                action={{
-                                    label: 'Upload Document',
-                                    onClick: () => setShowUploadModal(true),
-                                    icon: Plus
-                                }}
-                            />
+                            <div className="text-center py-12 sm:py-16 px-6">
+                                <div className="inline-flex p-5 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-3xl mb-4">
+                                    <FileText className="w-12 h-12 sm:w-14 sm:h-14 text-indigo-600" strokeWidth={2.5} />
+                                </div>
+                                <p className="text-xl font-black text-slate-900 mb-2">No documents found</p>
+                                <p className="text-sm sm:text-base text-slate-600 font-medium mb-6">
+                                    {searchQuery || filterType !== 'all' ? "Try adjusting your search or filter criteria" : "Upload your first document to get started"}
+                                </p>
+                                <button
+                                    onClick={() => setShowUploadModal(true)}
+                                    className="group px-6 py-3 legal-gradient-indigo text-white rounded-xl hover:shadow-2xl hover:shadow-indigo-500/30 transition-all duration-300 inline-flex items-center gap-2 font-bold hover:scale-105"
+                                >
+                                    <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
+                                    Upload Document
+                                </button>
+                            </div>
                         ) : (
                             <Table>
                                 <TableHeader>
@@ -575,7 +587,7 @@ export default function DocumentsPage() {
                                 </TableBody>
                             </Table>
                         )}
-                    </Card>
+                    </div>
                 </div>
             </div>
 

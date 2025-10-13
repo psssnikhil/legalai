@@ -277,8 +277,8 @@ export default function CasesPage() {
                                             key={filter.id}
                                             onClick={() => setQuickFilter(isActive ? '' : filter.id)}
                                             className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${isActive
-                                                    ? `${filter.color} ring-2 ring-offset-1 ring-slate-900`
-                                                    : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
+                                                ? `${filter.color} ring-2 ring-offset-1 ring-slate-900`
+                                                : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
                                                 }`}
                                         >
                                             <Icon className="w-4 h-4" />
@@ -626,7 +626,7 @@ function NewCaseModal({
                         label="Status"
                         fullWidth
                         value={formData.status}
-                        onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                        onChange={(e) => setFormData({ ...formData, status: e.target.value as CaseStatus })}
                     >
                         <option value="ACTIVE">Active</option>
                         <option value="PENDING">Pending</option>
@@ -639,7 +639,7 @@ function NewCaseModal({
                         label="Priority"
                         fullWidth
                         value={formData.priority}
-                        onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
+                        onChange={(e) => setFormData({ ...formData, priority: e.target.value as CasePriority })}
                     >
                         <option value="LOW">Low</option>
                         <option value="MEDIUM">Medium</option>
