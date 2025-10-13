@@ -293,7 +293,7 @@ export default function LegalLibraryChatPage() {
                                         </div>
 
                                         <p className="text-gray-700 text-sm leading-relaxed mb-4">
-                                            {caseItem.snippet}
+                                            {stripHtmlTags(caseItem.snippet)}
                                         </p>
 
                                         <div className="flex items-center gap-2">

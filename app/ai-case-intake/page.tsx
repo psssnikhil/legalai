@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
+import dynamic from 'next/dynamic'
 import ChatInterface from '@/components/ai-case-intake/ChatInterface'
 import DocumentUpload from '@/components/ai-case-intake/DocumentUpload'
 import VoiceRecorder from '@/components/ai-case-intake/VoiceRecorder'
@@ -17,6 +18,19 @@ import {
   Brain
 } from 'lucide-react'
 
+// Dynamically import PDFViewer to avoid SSR issues
+const PDFViewer = dynamic(() => import('@/components/PDFViewer'), {
+  ssr: false,
+  loading: () => (
+    <div className="flex items-center justify-center h-full bg-gray-50">
+      <div className="text-center">
+        <div className="w-12 h-12 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mx-auto mb-4" />
+        <p className="text-sm text-gray-600">Loading PDF Viewer...</p>
+      </div>
+    </div>
+  )
+})
+
 export default function AICaseIntakePage() {
   const { data: session } = useSession()
   const [activeTab, setActiveTab] = useState('chat')
@@ -24,6 +38,15 @@ export default function AICaseIntakePage() {
   const [analysisData, setAnalysisData] = useState(null)
   const [currentSessionId, setCurrentSessionId] = useState<string | undefined>(undefined)
   const [uploadedDocuments, setUploadedDocuments] = useState<any[]>([])
+
+  // PDF Viewer state
+  const [pdfViewerOpen, setPdfViewerOpen] = useState(false)
+  const [pdfFullscreen, setPdfFullscreen] = useState(false)
+  const [currentPDF, setCurrentPDF] = useState<{
+    documentId: string
+    documentName: string
+    pageNumber?: number
+  } | null>(null)
 
   const handleNewChat = () => {
     // Reset chat and start new session
@@ -50,6 +73,22 @@ export default function AICaseIntakePage() {
     console.log('Voice transcript:', transcript)
     // Switch back to chat after recording
     setActiveTab('chat')
+  }
+
+  const handleViewPDF = (documentId: string, documentName: string, pageNumber?: number) => {
+    setCurrentPDF({ documentId, documentName, pageNumber })
+    setPdfViewerOpen(true)
+  }
+
+  const handleClosePDF = () => {
+    setPdfViewerOpen(false)
+    setPdfFullscreen(false)
+    // Don't clear currentPDF immediately to allow for smooth transition
+    setTimeout(() => setCurrentPDF(null), 300)
+  }
+
+  const handleTogglePDFFullscreen = () => {
+    setPdfFullscreen(!pdfFullscreen)
   }
 
   return (
@@ -149,31 +188,71 @@ export default function AICaseIntakePage() {
           </div>
         </div>
 
-        {/* Main Chat Area */}
-        <div className="flex-1 flex flex-col">
-          {activeTab === 'chat' && (
-            <ChatInterface
-              onSessionChange={setCurrentSessionId}
-              initialDocuments={uploadedDocuments}
-            />
-          )}
-          {activeTab === 'upload' && (
-            <div className="flex-1 p-6">
-              <DocumentUpload
-                onUpload={handleFileUpload}
-                onClose={() => setActiveTab('chat')}
+        {/* Main Chat Area with Split View for PDF */}
+        <div className="flex-1 flex flex-row overflow-hidden">
+          {/* Chat Panel */}
+          <div className={`flex flex-col transition-all duration-300 ${pdfViewerOpen && !pdfFullscreen ? 'w-1/2' : 'w-full'
+            }`}>
+            {activeTab === 'chat' && (
+              <ChatInterface
+                onSessionChange={setCurrentSessionId}
+                initialDocuments={uploadedDocuments}
+                onViewPDF={handleViewPDF}
               />
-            </div>
+            )}
+            {activeTab === 'upload' && (
+              <div className="flex-1 p-6">
+                <DocumentUpload
+                  onUpload={handleFileUpload}
+                  onClose={() => setActiveTab('chat')}
+                  sessionId={currentSessionId}
+                />
+              </div>
+            )}
+            {activeTab === 'voice' && (
+              <div className="flex-1 p-6">
+                <VoiceRecorder
+                  onTranscription={handleVoiceRecording}
+                  onClose={() => setActiveTab('chat')}
+                />
+              </div>
+            )}
+            {activeTab === 'analysis' && <CaseAnalysis data={analysisData} sessionId={currentSessionId} />}
+          </div>
+
+          {/* PDF Viewer Panel - Only render when actually opened */}
+          {pdfViewerOpen && currentPDF && (
+            <>
+              {!pdfFullscreen && (
+                <div className="w-1/2 animate-slide-in-right">
+                  <PDFViewer
+                    key={currentPDF.documentId} // Force remount on document change
+                    documentId={currentPDF.documentId}
+                    documentName={currentPDF.documentName}
+                    initialPage={currentPDF.pageNumber || 1}
+                    onClose={handleClosePDF}
+                    isFullscreen={pdfFullscreen}
+                    onToggleFullscreen={handleTogglePDFFullscreen}
+                  />
+                </div>
+              )}
+
+              {/* PDF Viewer Fullscreen */}
+              {pdfFullscreen && (
+                <div className="fixed inset-0 z-50 animate-fade-in">
+                  <PDFViewer
+                    key={`fullscreen-${currentPDF.documentId}`}
+                    documentId={currentPDF.documentId}
+                    documentName={currentPDF.documentName}
+                    initialPage={currentPDF.pageNumber || 1}
+                    onClose={handleClosePDF}
+                    isFullscreen={pdfFullscreen}
+                    onToggleFullscreen={handleTogglePDFFullscreen}
+                  />
+                </div>
+              )}
+            </>
           )}
-          {activeTab === 'voice' && (
-            <div className="flex-1 p-6">
-              <VoiceRecorder
-                onTranscription={handleVoiceRecording}
-                onClose={() => setActiveTab('chat')}
-              />
-            </div>
-          )}
-          {activeTab === 'analysis' && <CaseAnalysis data={analysisData} sessionId={currentSessionId} />}
         </div>
       </div>
     </div>

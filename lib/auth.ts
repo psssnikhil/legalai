@@ -71,13 +71,13 @@ export const authOptions: NextAuthOptions = {
       // If signing in with Google, check if user exists or create new user
       if (account?.provider === 'google') {
         try {
-          const existingUser = await prisma.user.findUnique({
+          let dbUser = await prisma.user.findUnique({
             where: { email: user.email! }
           })
 
-          if (!existingUser) {
+          if (!dbUser) {
             // Create new user from Google account
-            await prisma.user.create({
+            dbUser = await prisma.user.create({
               data: {
                 email: user.email!,
                 name: user.name || '',
@@ -86,6 +86,10 @@ export const authOptions: NextAuthOptions = {
               }
             })
           }
+
+          // Store the database ID in the user object for the JWT callback
+          user.id = dbUser.id
+          user.role = dbUser.role
         } catch (error) {
           console.error('Error creating Google user:', error)
           return false
@@ -94,7 +98,16 @@ export const authOptions: NextAuthOptions = {
       return true
     },
     async jwt({ token, user, account }) {
-      if (user) {
+      // On initial sign in, get user from database to ensure we have the correct ID
+      if (account?.provider === 'google' && user?.email) {
+        const dbUser = await prisma.user.findUnique({
+          where: { email: user.email }
+        })
+        if (dbUser) {
+          token.id = dbUser.id
+          token.role = dbUser.role
+        }
+      } else if (user) {
         token.role = user.role
         token.id = user.id
       }

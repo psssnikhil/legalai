@@ -6,6 +6,15 @@ function getAwsConfig() {
   const accessKeyId = process.env.AWS_ACCESS_KEY_ID || process.env.AWS_ACCESS_KEY || ''
   const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY || process.env.AWS_SECRET_KEY || ''
   const bucket = process.env.S3_BUCKET_NAME || ''
+
+  console.log('[s3] AWS Config:', {
+    region,
+    hasAccessKey: !!accessKeyId,
+    accessKeyPrefix: accessKeyId ? accessKeyId.substring(0, 8) + '...' : 'MISSING',
+    hasSecretKey: !!secretAccessKey,
+    bucket: bucket || 'MISSING'
+  })
+
   return { region, accessKeyId, secretAccessKey, bucket }
 }
 

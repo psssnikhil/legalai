@@ -19,14 +19,26 @@ interface Message {
     type: string
     size: number
   }>
+  sources?: Array<{
+    documentId: string
+    documentName: string
+    chunkIndex: number
+    relevanceScore: number
+    chunkContent?: string
+    pageNumber?: number
+  }>
+  ragEnabled?: boolean
+  retrievalUsed?: boolean
+  routerReasoning?: string
 }
 
 interface ChatInterfaceProps {
   onSessionChange?: (sessionId: string) => void
   initialDocuments?: any[]
+  onViewPDF?: (documentId: string, documentName: string, pageNumber?: number) => void
 }
 
-export default function ChatInterface({ onSessionChange, initialDocuments = [] }: ChatInterfaceProps) {
+export default function ChatInterface({ onSessionChange, initialDocuments = [], onViewPDF }: ChatInterfaceProps) {
   const { data: session } = useSession()
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -110,7 +122,11 @@ export default function ChatInterface({ onSessionChange, initialDocuments = [] }
         id: (Date.now() + 1).toString(),
         content: data.message,
         role: 'assistant',
-        timestamp: new Date()
+        timestamp: new Date(),
+        sources: data.sources,
+        ragEnabled: data.ragEnabled,
+        retrievalUsed: data.retrievalUsed,
+        routerReasoning: data.routerReasoning
       }
 
       setMessages(prev => [...prev, assistantMessage])
@@ -200,7 +216,7 @@ export default function ChatInterface({ onSessionChange, initialDocuments = [] }
       <div className="flex-1 overflow-y-auto p-6 space-y-6">
         {/* Messages */}
         {messages.map((message) => (
-          <MessageBubble key={message.id} message={message} />
+          <MessageBubble key={message.id} message={message} onViewPDF={onViewPDF} />
         ))}
 
         {/* Loading indicator */}

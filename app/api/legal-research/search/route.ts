@@ -25,11 +25,17 @@ export async function GET(request: NextRequest) {
             results = await searchIndianKanoon(query, limit)
         }
 
+        // Check if using demo data (mock cases have specific tids)
+        const isDemoData = results.length > 0 && 
+            ['1849308', '1712542', '1934103', '1953529', '1199182'].includes(results[0].tid)
+
         return NextResponse.json({
             success: true,
             query,
             totalResults: results.length,
             source: 'indian-kanoon',
+            isDemoData,
+            note: isDemoData ? 'Using demo data. Configure INDIAN_KANOON_API_TOKEN for live data.' : undefined,
             cases: results
         })
     } catch (error) {
@@ -64,11 +70,17 @@ export async function POST(request: NextRequest) {
             results = await searchIndianKanoon(query, limit)
         }
 
+        // Check if using demo data
+        const isDemoData = results.length > 0 && 
+            ['1849308', '1712542', '1934103', '1953529', '1199182'].includes(results[0].tid)
+
         return NextResponse.json({
             success: true,
             query,
             totalResults: results.length,
             source: 'indian-kanoon',
+            isDemoData,
+            note: isDemoData ? 'Using demo data. Configure INDIAN_KANOON_API_TOKEN for live data.' : undefined,
             cases: results
         })
     } catch (error) {

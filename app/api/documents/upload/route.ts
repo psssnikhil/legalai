@@ -74,12 +74,46 @@ export async function POST(request: NextRequest) {
         const keyInfo = extractKeyInformation(processed.text)
         console.log(`[upload] Key info extracted`)
 
-        // Upload to S3 (skip for now to isolate the error)
+        // Try to upload to S3 first, fallback to database storage
         const fileKey = generateFileKey(session.user.id, file.name, 'document')
         console.log(`[upload] Generated file key: ${fileKey}`)
 
-        // Temporarily bypass S3 upload to test if that's causing the issue
-        console.log(`[upload] Skipping S3 upload for testing, saving to database directly`)
+        let s3Key: string | null = null
+        let s3Url: string | null = null
+        let binaryData: Buffer | null = null
+
+        // Attempt S3 upload
+        const s3Result = await uploadToS3(buffer, fileKey, file.type)
+
+        if (s3Result.success) {
+          console.log(`[upload] File uploaded to S3: ${s3Result.key}`)
+          s3Key = s3Result.key
+          s3Url = s3Result.location
+        } else {
+          console.log(`[upload] S3 upload failed (${s3Result.error}), storing in database`)
+          // Store binary in database as fallback
+          binaryData = buffer
+        }
+
+        // Handle session-based document linking
+        let messageIdForDocument: string | null = null
+
+        if (sessionId && sessionId !== 'current-session') {
+          // Link document to an existing chat session
+          console.log(`[upload] Linking document to session: ${sessionId}`)
+
+          // Find or create a "document upload" message in this session
+          const uploadMessage = await prisma.chatMessage.create({
+            data: {
+              content: `📎 Uploaded document: ${file.name}`,
+              role: 'system',
+              sessionId: sessionId,
+            }
+          })
+
+          messageIdForDocument = uploadMessage.id
+          console.log(`[upload] Created upload message with ID: ${uploadMessage.id}`)
+        }
 
         // Save to database
         const document = await prisma.document.create({
@@ -89,25 +123,28 @@ export async function POST(request: NextRequest) {
             mimeType: file.type,
             size: file.size,
             content: processed.text,
+            binaryData: binaryData,
+            s3Key: s3Key,
+            s3Url: s3Url,
             analysis: JSON.stringify({
               keyInfo,
               metadata: processed.metadata
             }),
             userId: session.user.id,
-            messageId: sessionId ? undefined : null,
+            messageId: messageIdForDocument,
             caseId: caseId || null,
-            clientId: clientId || null,
           }
         })
 
-        console.log(`[upload] Document saved to database with ID: ${document.id}`)
+        console.log(`[upload] Document saved to database with ID: ${document.id}${messageIdForDocument ? ` linked to message: ${messageIdForDocument}` : ''} (storage: ${s3Key ? 'S3' : 'Database'})`)
 
         results.push({
           success: true,
           filename: file.name,
           documentId: document.id,
           keyInfo,
-          metadata: processed.metadata
+          metadata: processed.metadata,
+          storage: s3Key ? 's3' : 'database'
         })
 
       } catch (error) {
@@ -127,6 +164,7 @@ export async function POST(request: NextRequest) {
     console.log(`[upload] Complete - Success: ${successCount}, Failed: ${failureCount}`)
 
     return NextResponse.json({
+      success: true,
       message: `Processed ${successCount} files successfully${failureCount > 0 ? `, ${failureCount} failed` : ''}`,
       results,
       summary: {
@@ -141,6 +179,7 @@ export async function POST(request: NextRequest) {
     console.error('[upload] Error stack:', error instanceof Error ? error.stack : 'No stack')
     const message = error instanceof Error ? error.message : 'Internal server error'
     return NextResponse.json({
+      success: false,
       message,
       error: error instanceof Error ? error.stack : String(error)
     }, { status: 500 })

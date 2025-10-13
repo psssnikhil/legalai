@@ -1,10 +1,13 @@
 'use client'
 
-import { useState } from 'react'
-import { Building2, Users, Bell, Shield, CreditCard, Globe, Save } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Building2, Users, Bell, Shield, CreditCard, Globe, Save, Sparkles, AlertCircle, CheckCircle } from 'lucide-react'
 
 export default function CompanySettingsPage() {
     const [activeTab, setActiveTab] = useState('company')
+    const [ragEnabled, setRagEnabled] = useState(false)
+    const [loading, setLoading] = useState(false)
+    const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
 
     const tabs = [
         { id: 'company', label: 'Company Info', icon: Building2 },
@@ -12,8 +15,50 @@ export default function CompanySettingsPage() {
         { id: 'notifications', label: 'Notifications', icon: Bell },
         { id: 'security', label: 'Security', icon: Shield },
         { id: 'billing', label: 'Billing', icon: CreditCard },
-        { id: 'preferences', label: 'Preferences', icon: Globe }
+        { id: 'preferences', label: 'Preferences', icon: Globe },
+        { id: 'ai', label: 'AI Features', icon: Sparkles }
     ]
+
+    // Load user settings on mount
+    useEffect(() => {
+        loadSettings()
+    }, [])
+
+    const loadSettings = async () => {
+        try {
+            const response = await fetch('/api/user/settings')
+            if (response.ok) {
+                const data = await response.json()
+                setRagEnabled(data.settings?.ragEnabled || false)
+            }
+        } catch (error) {
+            console.error('Error loading settings:', error)
+        }
+    }
+
+    const handleSaveAISettings = async () => {
+        setLoading(true)
+        setMessage(null)
+
+        try {
+            const response = await fetch('/api/user/settings', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ragEnabled })
+            })
+
+            if (response.ok) {
+                setMessage({ type: 'success', text: 'AI settings saved successfully!' })
+            } else {
+                setMessage({ type: 'error', text: 'Failed to save settings' })
+            }
+        } catch (error) {
+            setMessage({ type: 'error', text: 'An error occurred while saving' })
+        } finally {
+            setLoading(false)
+            setTimeout(() => setMessage(null), 3000)
+        }
+    }
 
     return (
         <div className="min-h-screen bg-gray-50 p-6">
@@ -34,8 +79,8 @@ export default function CompanySettingsPage() {
                                         key={tab.id}
                                         onClick={() => setActiveTab(tab.id)}
                                         className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${activeTab === tab.id
-                                                ? 'bg-blue-50 text-blue-700'
-                                                : 'text-gray-700 hover:bg-gray-50'
+                                            ? 'bg-blue-50 text-blue-700'
+                                            : 'text-gray-700 hover:bg-gray-50'
                                             }`}
                                     >
                                         <tab.icon className="w-5 h-5" />
@@ -230,6 +275,95 @@ export default function CompanySettingsPage() {
                                                 <option>CST (UTC-6)</option>
                                             </select>
                                         </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {activeTab === 'ai' && (
+                                <div className="space-y-6">
+                                    <div>
+                                        <h2 className="text-xl font-bold text-gray-900 mb-2">AI Features</h2>
+                                        <p className="text-gray-600 text-sm">Configure advanced AI capabilities for your chat assistant</p>
+                                    </div>
+
+                                    {/* Success/Error Message */}
+                                    {message && (
+                                        <div className={`flex items-center gap-2 p-4 rounded-lg ${message.type === 'success'
+                                                ? 'bg-green-50 border border-green-200 text-green-800'
+                                                : 'bg-red-50 border border-red-200 text-red-800'
+                                            }`}>
+                                            {message.type === 'success' ? (
+                                                <CheckCircle className="w-5 h-5" />
+                                            ) : (
+                                                <AlertCircle className="w-5 h-5" />
+                                            )}
+                                            <p>{message.text}</p>
+                                        </div>
+                                    )}
+
+                                    {/* RAG Feature Toggle */}
+                                    <div className="border border-gray-200 rounded-lg p-6">
+                                        <div className="flex items-start justify-between mb-4">
+                                            <div className="flex-1">
+                                                <div className="flex items-center gap-2 mb-2">
+                                                    <Sparkles className="w-5 h-5 text-indigo-600" />
+                                                    <h3 className="text-lg font-semibold text-gray-900">
+                                                        RAG (Retrieval-Augmented Generation)
+                                                    </h3>
+                                                </div>
+                                                <p className="text-sm text-gray-600 mb-3">
+                                                    Enable intelligent document retrieval for more accurate AI responses with source citations
+                                                </p>
+                                                <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4">
+                                                    <div className="flex items-start gap-2">
+                                                        <AlertCircle className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
+                                                        <div className="text-xs text-amber-800">
+                                                            <p className="font-semibold mb-1">Important Notes:</p>
+                                                            <ul className="space-y-1 list-disc list-inside">
+                                                                <li>This feature uses OpenAI embeddings and may incur additional API costs</li>
+                                                                <li>Documents are indexed in-memory and cleared after each session</li>
+                                                                <li>Responses will include citations to source documents</li>
+                                                                <li>Best for working with multiple documents simultaneously</li>
+                                                            </ul>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div className="space-y-2 text-sm text-gray-700">
+                                                    <p><span className="font-medium">✓ When enabled:</span> AI will search through your documents to find relevant information</p>
+                                                    <p><span className="font-medium">✓ Source attribution:</span> Responses include references to specific documents</p>
+                                                    <p><span className="font-medium">✓ Better accuracy:</span> Grounded in your actual document content</p>
+                                                </div>
+                                            </div>
+                                            <label className="relative inline-flex items-center cursor-pointer ml-4">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={ragEnabled}
+                                                    onChange={(e) => setRagEnabled(e.target.checked)}
+                                                    className="sr-only peer"
+                                                />
+                                                <div className="w-14 h-7 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-indigo-600"></div>
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    {/* Status Indicator */}
+                                    <div className={`flex items-center gap-2 text-sm ${ragEnabled ? 'text-green-600' : 'text-gray-500'}`}>
+                                        <div className={`w-2 h-2 rounded-full ${ragEnabled ? 'bg-green-600' : 'bg-gray-400'}`}></div>
+                                        <span className="font-medium">
+                                            RAG is currently {ragEnabled ? 'enabled' : 'disabled'}
+                                        </span>
+                                    </div>
+
+                                    {/* Save Button */}
+                                    <div className="flex justify-end pt-4 border-t border-gray-200">
+                                        <button
+                                            onClick={handleSaveAISettings}
+                                            disabled={loading}
+                                            className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                        >
+                                            <Save className="w-4 h-4" />
+                                            {loading ? 'Saving...' : 'Save AI Settings'}
+                                        </button>
                                     </div>
                                 </div>
                             )}

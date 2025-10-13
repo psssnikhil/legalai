@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
         startTime,
         endTime,
         duration: parseInt(duration),
-        caseId,
+        ...(caseId && caseId !== '' ? { caseId } : {}),
         clientName,
         state,
         district,

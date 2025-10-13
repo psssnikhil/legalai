@@ -60,6 +60,24 @@ model User {
   voiceNotes VoiceNote[]
   hearings Hearing[]
   clients  Client[]
+  settings UserSettings?
+}
+
+model UserSettings {
+  id        String   @id @default(cuid())
+  
+  // Feature Flags
+  ragEnabled Boolean  @default(false)  // Enable RAG for document retrieval in chat
+  
+  // Future settings can be added here
+  // aiProvider String?  @default("openai")
+  // maxTokens  Int?     @default(1000)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model VerificationToken {
@@ -136,6 +154,9 @@ model Document {
   mimeType    String
   size        Int
   content     String?  // Extracted text content
+  binaryData  Bytes?   // Raw file binary data (for PDFs, images, etc.)
+  s3Key       String?  // S3 key if stored in S3
+  s3Url       String?  // S3 URL if stored in S3
   analysis    String?  // AI analysis results
   createdAt   DateTime @default(now())
 

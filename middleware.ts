@@ -7,8 +7,20 @@ export default withAuth(
   {
     callbacks: {
       authorized: ({ token, req }) => {
+        const path = req.nextUrl.pathname
+
         // Allow access to auth pages without token
-        if (req.nextUrl.pathname.startsWith('/auth/')) {
+        if (path.startsWith('/auth/')) {
+          return true
+        }
+
+        // Allow access to public API routes without token
+        const publicApiRoutes = [
+          '/api/legal-research/',
+          '/api/auth/',
+        ]
+
+        if (publicApiRoutes.some(route => path.startsWith(route))) {
           return true
         }
         

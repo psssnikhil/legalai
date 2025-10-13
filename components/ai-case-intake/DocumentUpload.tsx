@@ -6,9 +6,10 @@ import { Upload, FileText, X, CheckCircle, AlertCircle } from 'lucide-react'
 interface DocumentUploadProps {
   onUpload: (files: File[], uploadResults: any[]) => void
   onClose: () => void
+  sessionId?: string
 }
 
-export default function DocumentUpload({ onUpload, onClose }: DocumentUploadProps) {
+export default function DocumentUpload({ onUpload, onClose, sessionId }: DocumentUploadProps) {
   const [dragActive, setDragActive] = useState(false)
   const [files, setFiles] = useState<File[]>([])
   const [uploading, setUploading] = useState(false)
@@ -61,11 +62,13 @@ export default function DocumentUpload({ onUpload, onClose }: DocumentUploadProp
         console.log('[DocumentUpload] Adding file:', file.name, file.type, file.size)
         formData.append('files', file)
       })
-      formData.append('sessionId', 'current-session')
+      // Pass the actual session ID so documents are linked to the correct session
+      console.log('[DocumentUpload] Using session ID:', sessionId || 'current-session')
+      formData.append('sessionId', sessionId || 'current-session')
 
-      console.log('[DocumentUpload] Sending request to /api/documents/upload-test')
+      console.log('[DocumentUpload] Sending request to /api/documents/upload')
 
-      const response = await fetch('/api/documents/upload-test', {
+      const response = await fetch('/api/documents/upload', {
         method: 'POST',
         body: formData,
       })

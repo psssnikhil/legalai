@@ -10,7 +10,7 @@ export async function GET(
 ) {
   try {
     const session = await getServerSession(authOptions)
-    
+
     if (!session?.user?.id) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
     }
@@ -55,7 +55,7 @@ export async function PUT(
 ) {
   try {
     const session = await getServerSession(authOptions)
-    
+
     if (!session?.user?.id) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
     }
@@ -72,7 +72,7 @@ export async function PUT(
       return NextResponse.json({ message: 'Hearing not found' }, { status: 404 })
     }
 
-    const { 
+    const {
       title,
       hearingDate,
       startTime,
@@ -102,7 +102,7 @@ export async function PUT(
         ...(startTime && { startTime }),
         ...(endTime !== undefined && { endTime }),
         ...(duration && { duration: parseInt(duration) }),
-        ...(caseId !== undefined && { caseId }),
+        ...(caseId !== undefined && (caseId && caseId !== '' ? { caseId } : { caseId: null })),
         ...(clientName !== undefined && { clientName }),
         ...(state !== undefined && { state }),
         ...(district !== undefined && { district }),
@@ -148,7 +148,7 @@ export async function DELETE(
 ) {
   try {
     const session = await getServerSession(authOptions)
-    
+
     if (!session?.user?.id) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
     }

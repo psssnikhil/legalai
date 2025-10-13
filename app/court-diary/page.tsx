@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Calendar as CalendarIcon, Plus, Clock, MapPin, User, FileText, ChevronLeft, ChevronRight, Edit, Trash2, X, AlertCircle } from 'lucide-react'
+import { Calendar as CalendarIcon, Plus, Clock, MapPin, User, FileText, ChevronLeft, ChevronRight, Edit, Trash2, X, AlertCircle, CalendarPlus } from 'lucide-react'
 
 interface Hearing {
     id: string
@@ -302,6 +302,55 @@ export default function CourtDiaryPage() {
         setCurrentDate(newDate)
     }
 
+    // Generate Google Calendar link
+    const generateGoogleCalendarLink = (hearing: Hearing) => {
+        // Create start date-time
+        const hearingDateObj = new Date(hearing.hearingDate)
+        const [startHours, startMinutes] = hearing.startTime.split(':')
+        hearingDateObj.setHours(parseInt(startHours), parseInt(startMinutes), 0)
+
+        // Create end date-time
+        const endDateObj = new Date(hearingDateObj)
+        if (hearing.endTime) {
+            const [endHours, endMinutes] = hearing.endTime.split(':')
+            endDateObj.setHours(parseInt(endHours), parseInt(endMinutes), 0)
+        } else {
+            endDateObj.setMinutes(endDateObj.getMinutes() + hearing.duration)
+        }
+
+        // Format dates for Google Calendar (YYYYMMDDTHHMMSSZ)
+        const formatDate = (date: Date) => {
+            return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z'
+        }
+
+        const startDate = formatDate(hearingDateObj)
+        const endDate = formatDate(endDateObj)
+
+        // Build event details
+        const title = encodeURIComponent(hearing.title)
+        const details = encodeURIComponent(
+            `${hearing.case?.title || hearing.clientName || ''}\n\n` +
+            `Hearing Type: ${hearing.hearingType || 'N/A'}\n` +
+            `Judge: ${hearing.judgeName || 'N/A'}\n` +
+            `Court Room: ${hearing.courtRoom || 'N/A'}\n` +
+            `Priority: ${hearing.priority}\n` +
+            `Status: ${hearing.status}\n\n` +
+            `${hearing.notes || ''}`
+        )
+        const location = encodeURIComponent(
+            [hearing.court, hearing.district, hearing.state].filter(Boolean).join(', ')
+        )
+
+        // Generate Google Calendar URL
+        return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startDate}/${endDate}&details=${details}&location=${location}`
+    }
+
+    // Handle add to Google Calendar
+    const handleAddToGoogleCalendar = (hearing: Hearing) => {
+        const calendarUrl = generateGoogleCalendarLink(hearing)
+        window.open(calendarUrl, '_blank')
+    }
+
     // Generate week days
     const getWeekDays = () => {
         const days = []
@@ -523,14 +572,23 @@ export default function CourtDiaryPage() {
                                                         {hearing.status}
                                                     </span>
                                                     <button
+                                                        onClick={() => handleAddToGoogleCalendar(hearing)}
+                                                        className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all duration-200"
+                                                        title="Add to Google Calendar"
+                                                    >
+                                                        <CalendarPlus className="w-4 h-4" />
+                                                    </button>
+                                                    <button
                                                         onClick={() => handleEdit(hearing)}
                                                         className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all duration-200"
+                                                        title="Edit hearing"
                                                     >
                                                         <Edit className="w-4 h-4" />
                                                     </button>
                                                     <button
                                                         onClick={() => handleDelete(hearing.id)}
                                                         className="p-2 text-rose-600 hover:bg-rose-50 rounded-lg transition-all duration-200"
+                                                        title="Delete hearing"
                                                     >
                                                         <Trash2 className="w-4 h-4" />
                                                     </button>
