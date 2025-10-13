@@ -22,7 +22,7 @@ export default function AICaseIntakePage() {
   const [activeTab, setActiveTab] = useState('chat')
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [analysisData, setAnalysisData] = useState(null)
-  const [currentSessionId, setCurrentSessionId] = useState<string | null>(null)
+  const [currentSessionId, setCurrentSessionId] = useState<string | undefined>(undefined)
   const [uploadedDocuments, setUploadedDocuments] = useState<any[]>([])
 
   const handleNewChat = () => {

@@ -170,8 +170,8 @@ export default function LegalLibraryChatPage() {
                             <button
                                 onClick={() => setActiveTab('search')}
                                 className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === 'search'
-                                        ? 'bg-white text-blue-600 shadow-sm'
-                                        : 'text-gray-600 hover:text-gray-900'
+                                    ? 'bg-white text-blue-600 shadow-sm'
+                                    : 'text-gray-600 hover:text-gray-900'
                                     }`}
                             >
                                 <Search className="w-4 h-4 inline mr-2" />
@@ -180,8 +180,8 @@ export default function LegalLibraryChatPage() {
                             <button
                                 onClick={() => setActiveTab('cnr')}
                                 className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === 'cnr'
-                                        ? 'bg-white text-blue-600 shadow-sm'
-                                        : 'text-gray-600 hover:text-gray-900'
+                                    ? 'bg-white text-blue-600 shadow-sm'
+                                    : 'text-gray-600 hover:text-gray-900'
                                     }`}
                             >
                                 <FileText className="w-4 h-4 inline mr-2" />
@@ -190,8 +190,8 @@ export default function LegalLibraryChatPage() {
                             <button
                                 onClick={() => setActiveTab('chat')}
                                 className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === 'chat'
-                                        ? 'bg-white text-blue-600 shadow-sm'
-                                        : 'text-gray-600 hover:text-gray-900'
+                                    ? 'bg-white text-blue-600 shadow-sm'
+                                    : 'text-gray-600 hover:text-gray-900'
                                     }`}
                             >
                                 <Sparkles className="w-4 h-4 inline mr-2" />
@@ -436,8 +436,8 @@ export default function LegalLibraryChatPage() {
                                 >
                                     <div
                                         className={`max-w-[70%] rounded-xl p-4 ${message.role === 'user'
-                                                ? 'bg-blue-600 text-white'
-                                                : 'bg-white border border-gray-200 text-gray-900'
+                                            ? 'bg-blue-600 text-white'
+                                            : 'bg-white border border-gray-200 text-gray-900'
                                             }`}
                                     >
                                         {message.role === 'assistant' && (
