@@ -17,6 +17,13 @@ const nextConfig = {
     domains: ['localhost'],
   },
   
+  // Use Vercel's URL for NextAuth in production
+  env: {
+    NEXTAUTH_URL: process.env.VERCEL_URL 
+      ? `https://${process.env.VERCEL_URL}`
+      : process.env.NEXTAUTH_URL || 'http://localhost:3000',
+  },
+  
   // Development options
   ...(process.env.NODE_ENV === 'development' && {
     // Disable telemetry in development

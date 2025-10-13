@@ -5,6 +5,16 @@ import bcrypt from 'bcryptjs'
 
 const prisma = new PrismaClient()
 
+// Determine the base URL for NextAuth
+const getBaseUrl = () => {
+  // For Vercel deployments, use VERCEL_URL
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}`
+  }
+  // Fallback to NEXTAUTH_URL or localhost
+  return process.env.NEXTAUTH_URL || 'http://localhost:3000'
+}
+
 export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
@@ -63,6 +73,13 @@ export const authOptions: NextAuthOptions = {
         session.user.role = token.role as string
       }
       return session
+    },
+    async redirect({ url, baseUrl }) {
+      // Allows relative callback URLs
+      if (url.startsWith("/")) return `${baseUrl}${url}`
+      // Allows callback URLs on the same origin
+      else if (new URL(url).origin === baseUrl) return url
+      return baseUrl
     },
   },
   pages: {
