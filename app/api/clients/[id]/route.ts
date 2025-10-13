@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import prisma from '@/lib/prisma'
+import { prisma } from '@/lib/prisma'
 
 // GET - Fetch a single client
 export async function GET(
@@ -10,7 +10,7 @@ export async function GET(
 ) {
   try {
     const session = await getServerSession(authOptions)
-    
+
     if (!session?.user?.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
@@ -103,7 +103,7 @@ export async function PUT(
 ) {
   try {
     const session = await getServerSession(authOptions)
-    
+
     if (!session?.user?.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
@@ -142,8 +142,8 @@ export async function PUT(
         ...(address !== undefined && { address }),
         ...(clientType && { clientType }),
         ...(status && { status }),
-        ...(customFields !== undefined && { 
-          customFields: customFields ? JSON.stringify(customFields) : null 
+        ...(customFields !== undefined && {
+          customFields: customFields ? JSON.stringify(customFields) : null
         })
       },
       include: {
@@ -189,7 +189,7 @@ export async function DELETE(
 ) {
   try {
     const session = await getServerSession(authOptions)
-    
+
     if (!session?.user?.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
@@ -224,9 +224,9 @@ export async function DELETE(
     }
 
     // Check if client has associated data
-    const hasAssociatedData = 
-      existingClient._count.cases > 0 || 
-      existingClient._count.documents > 0 || 
+    const hasAssociatedData =
+      existingClient._count.cases > 0 ||
+      existingClient._count.documents > 0 ||
       existingClient._count.hearings > 0
 
     if (hasAssociatedData) {
@@ -236,7 +236,7 @@ export async function DELETE(
         data: { status: 'ARCHIVED' }
       })
 
-      return NextResponse.json({ 
+      return NextResponse.json({
         message: 'Client archived successfully (has associated data)',
         archived: true
       })
@@ -246,7 +246,7 @@ export async function DELETE(
         where: { id: params.id }
       })
 
-      return NextResponse.json({ 
+      return NextResponse.json({
         message: 'Client deleted successfully',
         deleted: true
       })
