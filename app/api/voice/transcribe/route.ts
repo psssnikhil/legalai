@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       transcript: transcription.text,
-      language: transcription.language || 'en'
+      language: language
     })
 
   } catch (error) {
