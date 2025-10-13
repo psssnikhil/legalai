@@ -57,18 +57,19 @@ export default function SignUp() {
         })
 
         if (result?.ok) {
-          router.push('/')
-          router.refresh()
+          // Use window.location for a hard redirect to ensure session is established
+          window.location.href = '/'
         } else {
-          setError('Registration successful. Please sign in.')
+          setError('Registration successful, but sign-in failed. Please sign in manually.')
+          setIsLoading(false)
         }
       } else {
         const data = await response.json()
         setError(data.message || 'Registration failed')
+        setIsLoading(false)
       }
     } catch (error) {
       setError('An error occurred. Please try again.')
-    } finally {
       setIsLoading(false)
     }
   }

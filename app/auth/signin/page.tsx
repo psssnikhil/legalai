@@ -28,13 +28,13 @@ export default function SignIn() {
 
       if (result?.error) {
         setError('Invalid email or password')
-      } else {
-        router.push('/')
-        router.refresh()
+        setIsLoading(false)
+      } else if (result?.ok) {
+        // Use window.location for a hard redirect to ensure session is established
+        window.location.href = '/'
       }
     } catch (error) {
       setError('An error occurred. Please try again.')
-    } finally {
       setIsLoading(false)
     }
   }
