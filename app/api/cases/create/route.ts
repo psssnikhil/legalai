@@ -18,24 +18,37 @@ export async function POST(request: NextRequest) {
       clientEmail, 
       clientPhone, 
       priority = 'MEDIUM',
+      status = 'ACTIVE',
+      caseType,
+      caseValue,
+      assignedTo,
+      nextHearing,
+      isDraft = false,
+      tags,
       analysisId 
     } = await request.json()
 
-    if (!title) {
+    if (!title && !isDraft) {
       return NextResponse.json({ message: 'Title is required' }, { status: 400 })
     }
 
     // Create the case
     const newCase = await prisma.case.create({
       data: {
-        title,
+        title: title || 'Draft Case',
         description,
         clientName,
         clientEmail,
         clientPhone,
         priority,
-        userId: session.user.id,
-        status: 'ACTIVE'
+        status,
+        caseType,
+        caseValue: caseValue ? parseFloat(caseValue) : null,
+        assignedTo,
+        nextHearing: nextHearing ? new Date(nextHearing) : null,
+        isDraft,
+        tags,
+        userId: session.user.id
       }
     })
 

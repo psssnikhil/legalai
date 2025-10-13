@@ -58,6 +58,8 @@ model User {
   chatSessions ChatSession[]
   documents Document[]
   voiceNotes VoiceNote[]
+  hearings Hearing[]
+  clients  Client[]
 }
 
 model VerificationToken {
@@ -69,18 +71,27 @@ model VerificationToken {
 }
 
 model Case {
-  id          String   @id @default(cuid())
-  title       String
-  description String?
-  status      String   @default("ACTIVE")
-  priority    String   @default("MEDIUM")
-  clientName  String?
-  clientEmail String?
-  clientPhone String?
-  startDate   DateTime @default(now())
-  endDate     DateTime?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id           String   @id @default(cuid())
+  title        String
+  description  String?
+  status       String   @default("ACTIVE") // ACTIVE, PENDING, REVIEW, CLOSED, URGENT
+  priority     String   @default("MEDIUM") // LOW, MEDIUM, HIGH
+  caseType     String?  // Employment, Civil Litigation, Corporate Law, etc.
+  caseValue    Float?   // Monetary value of the case
+  clientName   String?
+  clientEmail  String?
+  clientPhone  String?
+  clientId     String?
+  client       Client?  @relation("ClientCases", fields: [clientId], references: [id])
+  assignedTo   String?  // Lawyer/team member assigned
+  nextHearing  DateTime?
+  lastUpdated  DateTime @updatedAt
+  startDate    DateTime @default(now())
+  endDate      DateTime?
+  isDraft      Boolean  @default(false)
+  tags         String?  // JSON array of tags for filtering
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   userId String
   user   User   @relation(fields: [userId], references: [id])
@@ -88,6 +99,7 @@ model Case {
   chatSessions ChatSession[]
   documents   Document[]
   analyses    CaseAnalysis[]
+  hearings    Hearing[]
 }
 
 model ChatSession {
@@ -129,6 +141,8 @@ model Document {
 
   caseId    String?
   case      Case?        @relation(fields: [caseId], references: [id])
+  clientId  String?
+  client    Client?      @relation("ClientDocuments", fields: [clientId], references: [id])
   messageId String?
   message   ChatMessage? @relation(fields: [messageId], references: [id])
   userId    String
@@ -162,4 +176,86 @@ model CaseAnalysis {
 
   caseId String?
   case   Case?   @relation(fields: [caseId], references: [id])
+}
+
+model Hearing {
+  id           String   @id @default(cuid())
+  title        String
+  hearingDate  DateTime
+  startTime    String   // Format: "HH:MM"
+  endTime      String?  // Format: "HH:MM"
+  duration     Int      @default(60) // Duration in minutes
+  
+  // Case and Client Information
+  caseId       String?
+  case         Case?    @relation(fields: [caseId], references: [id])
+  clientId     String?
+  client       Client?  @relation(fields: [clientId], references: [id])
+  clientName   String?
+  
+  // Location Details
+  state        String?
+  district     String?
+  court        String?
+  courtType    String?  // Supreme Court, High Court, District Court, etc.
+  courtRoom    String?
+  
+  // Judge and Priority
+  judgeName    String?
+  priority     String   @default("MEDIUM") // LOW, MEDIUM, HIGH, URGENT
+  
+  // Status and Type
+  status       String   @default("SCHEDULED") // SCHEDULED, COMPLETED, RESCHEDULED, CANCELLED
+  hearingType  String?  // Motion Hearing, Final Arguments, Case Conference, etc.
+  
+  // Additional Details
+  notes        String?
+  reminders    String?  // JSON array of reminder times
+  
+  // Metadata
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  userId       String
+  user         User     @relation(fields: [userId], references: [id])
+  
+  @@index([hearingDate])
+  @@index([userId])
+  @@index([caseId])
+  @@index([status])
+}
+
+model Client {
+  id              String   @id @default(cuid())
+  
+  // Basic Information
+  name            String
+  email           String
+  phone           String
+  
+  // Optional Basic Fields
+  company         String?
+  address         String?
+  
+  // Type and Status
+  clientType      String   @default("INDIVIDUAL") // INDIVIDUAL, COMPANY, ORGANIZATION
+  status          String   @default("ACTIVE") // ACTIVE, INACTIVE, ARCHIVED
+  
+  // Custom Fields (stored as JSON)
+  customFields    String?  // JSON object for additional custom fields
+  
+  // Metadata
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  // Relations
+  userId          String
+  user            User     @relation(fields: [userId], references: [id])
+  cases           Case[]   @relation("ClientCases")
+  documents       Document[] @relation("ClientDocuments")
+  hearings        Hearing[]
+  
+  @@index([userId])
+  @@index([status])
+  @@index([email])
 }

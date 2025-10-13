@@ -1,7 +1,18 @@
 'use client'
 
-import { useState } from 'react'
-import { Plus, Search, Mail, Phone, MapPin, Briefcase, MoreVertical, User } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Plus, Mail, Phone, MapPin, Briefcase, MoreVertical, User, Users, FileText, Calendar } from 'lucide-react'
+import PageHeader from '@/components/ui/PageHeader'
+import Button from '@/components/ui/Button'
+import SearchBar from '@/components/ui/SearchBar'
+import Badge from '@/components/ui/Badge'
+import StatCard from '@/components/ui/StatCard'
+import Card from '@/components/ui/Card'
+import EmptyState from '@/components/ui/EmptyState'
+import Tabs from '@/components/ui/Tabs'
+import Select from '@/components/ui/Select'
+import AddClientModal from '@/components/clients/AddClientModal'
+import ClientDetailModal from '@/components/clients/ClientDetailModal'
 
 interface Client {
     id: string
@@ -9,223 +20,323 @@ interface Client {
     email: string
     phone: string
     company?: string
-    address: string
+    address?: string
+    clientType: string
+    status: string
     activeCases: number
     totalCases: number
-    status: 'active' | 'inactive'
-    joinedDate: string
+    totalDocuments: number
+    totalHearings: number
+    customFields?: Record<string, { value: string; type: string }>
+    createdAt: string
 }
 
 export default function ClientsPage() {
     const [searchQuery, setSearchQuery] = useState('')
+    const [activeTab, setActiveTab] = useState('ALL')
+    const [clients, setClients] = useState<Client[]>([])
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState('')
+    const [isAddModalOpen, setIsAddModalOpen] = useState(false)
+    const [selectedClientId, setSelectedClientId] = useState<string | null>(null)
+    const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
 
-    const clients: Client[] = [
+    useEffect(() => {
+        fetchClients()
+    }, [])
+
+    const fetchClients = async () => {
+        console.log('fetchClients: Starting to fetch clients...')
+        setLoading(true)
+        setError('')
+
+        try {
+            const response = await fetch('/api/clients')
+            const data = await response.json()
+            console.log('fetchClients: Response received', { status: response.status, clientCount: data.clients?.length })
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Failed to fetch clients')
+            }
+
+            console.log('fetchClients: Setting clients', data.clients)
+            setClients(data.clients || [])
+        } catch (err) {
+            console.error('fetchClients: Error', err)
+            setError(err instanceof Error ? err.message : 'Failed to fetch clients')
+        } finally {
+            setLoading(false)
+            console.log('fetchClients: Completed')
+        }
+    }
+
+    const handleClientClick = (clientId: string) => {
+        setSelectedClientId(clientId)
+        setIsDetailModalOpen(true)
+    }
+
+    const filteredClients = clients.filter(client => {
+        // Filter by status tab
+        if (activeTab !== 'ALL' && client.status !== activeTab) {
+            return false
+        }
+
+        // Filter by search query
+        if (searchQuery) {
+            const query = searchQuery.toLowerCase()
+            return (
+                client.name.toLowerCase().includes(query) ||
+                client.email.toLowerCase().includes(query) ||
+                client.company?.toLowerCase().includes(query)
+            )
+        }
+
+        return true
+    })
+
+    const stats = [
         {
-            id: 'CLI-001',
-            name: 'John Smith',
-            email: 'john.smith@email.com',
-            phone: '+1 (555) 123-4567',
-            company: 'Smith Enterprises',
-            address: '123 Main St, New York, NY',
-            activeCases: 2,
-            totalCases: 5,
-            status: 'active',
-            joinedDate: 'Jan 15, 2024'
+            label: 'Total Clients',
+            value: clients.length,
+            icon: Users,
+            iconColor: 'text-slate-600',
+            iconBgColor: 'bg-slate-100'
         },
         {
-            id: 'CLI-002',
-            name: 'ABC Corporation',
-            email: 'legal@abccorp.com',
-            phone: '+1 (555) 234-5678',
-            company: 'ABC Corporation',
-            address: '456 Business Ave, Chicago, IL',
-            activeCases: 3,
-            totalCases: 8,
-            status: 'active',
-            joinedDate: 'Feb 20, 2024'
+            label: 'Active Clients',
+            value: clients.filter(c => c.status === 'ACTIVE').length,
+            icon: User,
+            iconColor: 'text-emerald-600',
+            iconBgColor: 'bg-emerald-100'
         },
         {
-            id: 'CLI-003',
-            name: 'Tech Innovations Inc',
-            email: 'contact@techinnovations.com',
-            phone: '+1 (555) 345-6789',
-            company: 'Tech Innovations Inc',
-            address: '789 Tech Park, San Francisco, CA',
-            activeCases: 1,
-            totalCases: 3,
-            status: 'active',
-            joinedDate: 'Mar 10, 2024'
+            label: 'Total Cases',
+            value: clients.reduce((sum, c) => sum + c.totalCases, 0),
+            icon: Briefcase,
+            iconColor: 'text-blue-600',
+            iconBgColor: 'bg-blue-100'
         },
         {
-            id: 'CLI-004',
-            name: 'Jane Miller',
-            email: 'jane.miller@email.com',
-            phone: '+1 (555) 456-7890',
-            address: '321 Oak Street, Boston, MA',
-            activeCases: 0,
-            totalCases: 2,
-            status: 'inactive',
-            joinedDate: 'Dec 5, 2023'
-        },
-        {
-            id: 'CLI-005',
-            name: 'Real Estate Holdings',
-            email: 'info@reholdings.com',
-            phone: '+1 (555) 567-8901',
-            company: 'Real Estate Holdings LLC',
-            address: '555 Property Lane, Miami, FL',
-            activeCases: 1,
-            totalCases: 6,
-            status: 'active',
-            joinedDate: 'Apr 3, 2024'
-        },
-        {
-            id: 'CLI-006',
-            name: 'Innovation Labs',
-            email: 'legal@innovationlabs.com',
-            phone: '+1 (555) 678-9012',
-            company: 'Innovation Labs',
-            address: '888 Research Blvd, Austin, TX',
-            activeCases: 2,
-            totalCases: 4,
-            status: 'active',
-            joinedDate: 'May 18, 2024'
+            label: 'Documents',
+            value: clients.reduce((sum, c) => sum + (c.totalDocuments || 0), 0),
+            icon: FileText,
+            iconColor: 'text-purple-600',
+            iconBgColor: 'bg-purple-100'
         }
     ]
 
-    const filteredClients = clients.filter(client =>
-        client.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        client.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        client.company?.toLowerCase().includes(searchQuery.toLowerCase())
-    )
-
-    const stats = [
-        { label: 'Total Clients', value: clients.length, color: 'text-blue-600' },
-        { label: 'Active Clients', value: clients.filter(c => c.status === 'active').length, color: 'text-green-600' },
-        { label: 'Total Cases', value: clients.reduce((sum, c) => sum + c.totalCases, 0), color: 'text-purple-600' },
-        { label: 'Active Cases', value: clients.reduce((sum, c) => sum + c.activeCases, 0), color: 'text-orange-600' }
+    const tabs = [
+        { id: 'ALL', label: 'All', count: clients.length },
+        { id: 'ACTIVE', label: 'Active', count: clients.filter(c => c.status === 'ACTIVE').length },
+        { id: 'INACTIVE', label: 'Inactive', count: clients.filter(c => c.status === 'INACTIVE').length },
+        { id: 'ARCHIVED', label: 'Archived', count: clients.filter(c => c.status === 'ARCHIVED').length }
     ]
 
-    return (
-        <div className="min-h-screen bg-gray-50 p-6">
-            <div className="max-w-[1800px] mx-auto space-y-6">
-                {/* Header */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div>
-                        <h1 className="text-3xl font-bold text-gray-900">Clients</h1>
-                        <p className="text-gray-600 mt-1">Manage your client relationships</p>
-                    </div>
-                    <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2">
-                        <Plus className="w-4 h-4" />
-                        Add Client
-                    </button>
-                </div>
-
-                {/* Stats */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    {stats.map((stat, index) => (
-                        <div key={index} className="bg-white rounded-xl border border-gray-200 p-6">
-                            <p className="text-sm font-medium text-gray-600 mb-2">{stat.label}</p>
-                            <p className={`text-3xl font-bold ${stat.color}`}>{stat.value}</p>
-                        </div>
-                    ))}
-                </div>
-
-                {/* Search */}
-                <div className="bg-white rounded-xl border border-gray-200 p-4">
-                    <div className="relative">
-                        <Search className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                        <input
-                            type="text"
-                            placeholder="Search clients by name, email, or company..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        />
+    if (loading) {
+        return (
+            <div className="legal-page">
+                <PageHeader
+                    title="Clients"
+                    description="Manage your client relationships and cases"
+                    icon={Users}
+                />
+                <div className="p-6">
+                    <div className="legal-container">
+                        <Card>
+                            <div className="text-center py-12">
+                                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+                                <p className="mt-4 text-slate-600">Loading clients...</p>
+                            </div>
+                        </Card>
                     </div>
                 </div>
-
-                {/* Clients Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {filteredClients.map((client) => (
-                        <div key={client.id} className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg transition-shadow">
-                            {/* Header */}
-                            <div className="flex items-start justify-between mb-4">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                                        <User className="w-6 h-6 text-blue-600" />
-                                    </div>
-                                    <div>
-                                        <h3 className="font-semibold text-gray-900">{client.name}</h3>
-                                        <p className="text-xs text-gray-500">{client.id}</p>
-                                    </div>
-                                </div>
-                                <button className="p-1 hover:bg-gray-100 rounded transition-colors">
-                                    <MoreVertical className="w-4 h-4 text-gray-500" />
-                                </button>
-                            </div>
-
-                            {/* Company */}
-                            {client.company && (
-                                <div className="flex items-center gap-2 text-sm text-gray-600 mb-3">
-                                    <Briefcase className="w-4 h-4" />
-                                    {client.company}
-                                </div>
-                            )}
-
-                            {/* Contact Info */}
-                            <div className="space-y-2 mb-4">
-                                <div className="flex items-center gap-2 text-sm text-gray-600">
-                                    <Mail className="w-4 h-4" />
-                                    <span className="truncate">{client.email}</span>
-                                </div>
-                                <div className="flex items-center gap-2 text-sm text-gray-600">
-                                    <Phone className="w-4 h-4" />
-                                    {client.phone}
-                                </div>
-                                <div className="flex items-center gap-2 text-sm text-gray-600">
-                                    <MapPin className="w-4 h-4" />
-                                    <span className="truncate">{client.address}</span>
-                                </div>
-                            </div>
-
-                            {/* Cases Info */}
-                            <div className="flex items-center justify-between pt-4 border-t border-gray-200">
-                                <div>
-                                    <p className="text-xs text-gray-500">Active Cases</p>
-                                    <p className="text-lg font-bold text-blue-600">{client.activeCases}</p>
-                                </div>
-                                <div>
-                                    <p className="text-xs text-gray-500">Total Cases</p>
-                                    <p className="text-lg font-bold text-gray-700">{client.totalCases}</p>
-                                </div>
-                                <div>
-                                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${client.status === 'active'
-                                            ? 'bg-green-100 text-green-700'
-                                            : 'bg-gray-100 text-gray-700'
-                                        }`}>
-                                        {client.status}
-                                    </span>
-                                </div>
-                            </div>
-
-                            {/* Footer */}
-                            <div className="mt-4 pt-4 border-t border-gray-200">
-                                <p className="text-xs text-gray-500">Client since {client.joinedDate}</p>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-
-                {filteredClients.length === 0 && (
-                    <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
-                        <User className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">No clients found</h3>
-                        <p className="text-gray-600">Try adjusting your search criteria</p>
-                    </div>
-                )}
             </div>
+        )
+    }
+
+    return (
+        <div className="legal-page">
+            <PageHeader
+                title="Integrated Client Management"
+                description="Complete client lifecycle with connected case, document, and research management"
+                icon={Users}
+                badge={{ text: `${clients.length} Clients`, variant: 'slate' }}
+                actions={
+                    <Button variant="primary" icon={Plus} onClick={() => setIsAddModalOpen(true)}>
+                        Add Client
+                    </Button>
+                }
+            />
+
+            <div className="p-6">
+                <div className="legal-container space-y-6">
+                    {error && (
+                        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+                            {error}
+                        </div>
+                    )}
+
+                    {/* Stats Dashboard */}
+                    <Card>
+                        <div className="mb-6">
+                            <div className="flex items-center gap-2 text-purple-600 mb-2">
+                                <Briefcase className="w-5 h-5" />
+                                <h3 className="font-semibold">Integrated Client Services Dashboard</h3>
+                            </div>
+                            <p className="text-sm text-slate-600">
+                                Connect clients with cases, documents, court schedules, and AI research
+                            </p>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                            {stats.map((stat, index) => (
+                                <div key={index} className="text-center">
+                                    <div className={`w-12 h-12 ${stat.iconBgColor} rounded-xl flex items-center justify-center mx-auto mb-3`}>
+                                        <stat.icon className={`w-6 h-6 ${stat.iconColor}`} />
+                                    </div>
+                                    <div className="text-3xl font-bold text-slate-900 mb-1">{stat.value}</div>
+                                    <div className="text-sm text-slate-600">{stat.label}</div>
+                                </div>
+                            ))}
+                        </div>
+                    </Card>
+
+                    {/* Search and Filter */}
+                    <div className="flex flex-col sm:flex-row gap-4">
+                        <div className="flex-1">
+                            <SearchBar
+                                placeholder="Search clients..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                            />
+                        </div>
+                        <Select value="all-types" onChange={() => { }}>
+                            <option value="all-types">All Types</option>
+                            <option value="individual">Individual</option>
+                            <option value="company">Company</option>
+                            <option value="organization">Organization</option>
+                        </Select>
+                    </div>
+
+                    {/* Tabs */}
+                    <Tabs
+                        tabs={tabs}
+                        activeTab={activeTab}
+                        onChange={setActiveTab}
+                    />
+
+                    {/* Clients Grid */}
+                    {filteredClients.length === 0 ? (
+                        <Card>
+                            <EmptyState
+                                icon={Users}
+                                title={clients.length === 0 ? "No clients yet" : "No clients found"}
+                                description={clients.length === 0 ? "Get started by adding your first client" : "Try adjusting your search criteria or filters"}
+                                action={{
+                                    label: 'Add Client',
+                                    onClick: () => setIsAddModalOpen(true),
+                                    icon: Plus
+                                }}
+                            />
+                        </Card>
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {filteredClients.map((client) => (
+                                <Card
+                                    key={client.id}
+                                    hover
+                                    className="relative cursor-pointer"
+                                    onClick={() => handleClientClick(client.id)}
+                                >
+                                    {/* Header */}
+                                    <div className="flex items-start justify-between mb-4">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
+                                                <User className="w-6 h-6 text-white" />
+                                            </div>
+                                            <div>
+                                                <h3 className="font-semibold text-slate-900">{client.name}</h3>
+                                                <Badge variant="slate" className="mt-1">
+                                                    {client.clientType}
+                                                </Badge>
+                                            </div>
+                                        </div>
+                                        <Badge variant={client.status === 'ACTIVE' ? 'success' : client.status === 'INACTIVE' ? 'warning' : 'default'} dot>
+                                            {client.status}
+                                        </Badge>
+                                    </div>
+
+                                    {/* Company */}
+                                    {client.company && (
+                                        <div className="flex items-center gap-2 text-sm text-slate-600 mb-3 pb-3 border-b border-slate-100">
+                                            <Briefcase className="w-4 h-4 text-slate-400" />
+                                            <span className="truncate">{client.company}</span>
+                                        </div>
+                                    )}
+
+                                    {/* Contact Info */}
+                                    <div className="space-y-2 mb-4">
+                                        <div className="flex items-center gap-2 text-sm text-slate-600">
+                                            <Mail className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                                            <span className="truncate">{client.email}</span>
+                                        </div>
+                                        <div className="flex items-center gap-2 text-sm text-slate-600">
+                                            <Phone className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                                            <span>{client.phone}</span>
+                                        </div>
+                                        {client.address && (
+                                            <div className="flex items-center gap-2 text-sm text-slate-600">
+                                                <MapPin className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                                                <span className="truncate">{client.address}</span>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Stats Grid */}
+                                    <div className="grid grid-cols-2 gap-3 pt-4 border-t border-slate-100">
+                                        <div className="text-center bg-emerald-50 rounded-lg p-3">
+                                            <Briefcase className="w-4 h-4 text-emerald-600 mx-auto mb-1" />
+                                            <p className="text-lg font-bold text-emerald-600">{client.activeCases}</p>
+                                            <p className="text-xs text-slate-600">Active Cases</p>
+                                        </div>
+                                        <div className="text-center bg-purple-50 rounded-lg p-3">
+                                            <FileText className="w-4 h-4 text-purple-600 mx-auto mb-1" />
+                                            <p className="text-lg font-bold text-purple-600">{client.totalDocuments || 0}</p>
+                                            <p className="text-xs text-slate-600">Documents</p>
+                                        </div>
+                                    </div>
+
+                                    {/* Footer */}
+                                    <div className="mt-4 pt-4 border-t border-slate-100">
+                                        <p className="text-xs text-slate-500">
+                                            Client since {new Date(client.createdAt).toLocaleDateString('en-US', {
+                                                month: 'short',
+                                                day: 'numeric',
+                                                year: 'numeric'
+                                            })}
+                                        </p>
+                                    </div>
+                                </Card>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* Modals */}
+            <AddClientModal
+                isOpen={isAddModalOpen}
+                onClose={() => setIsAddModalOpen(false)}
+                onSuccess={fetchClients}
+            />
+            <ClientDetailModal
+                isOpen={isDetailModalOpen}
+                clientId={selectedClientId}
+                onClose={() => {
+                    setIsDetailModalOpen(false)
+                    setSelectedClientId(null)
+                }}
+                onSuccess={fetchClients}
+            />
         </div>
     )
 }
-

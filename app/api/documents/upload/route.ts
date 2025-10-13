@@ -26,8 +26,10 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData()
     const files = formData.getAll('files') as File[]
     const sessionId = formData.get('sessionId') as string
+    const caseId = formData.get('caseId') as string | null
+    const clientId = formData.get('clientId') as string | null
 
-    console.log('[upload] FormData parsed, files:', files?.length, 'sessionId:', sessionId)
+    console.log('[upload] FormData parsed, files:', files?.length, 'sessionId:', sessionId, 'caseId:', caseId, 'clientId:', clientId)
 
     if (!files || files.length === 0) {
       console.error('[upload] No files provided')
@@ -93,6 +95,8 @@ export async function POST(request: NextRequest) {
             }),
             userId: session.user.id,
             messageId: sessionId ? undefined : null,
+            caseId: caseId || null,
+            clientId: clientId || null,
           }
         })
 
