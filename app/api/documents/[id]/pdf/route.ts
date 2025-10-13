@@ -11,7 +11,7 @@ export async function GET(
   try {
     console.log('[pdf] Fetching document:', params.id)
     const session = await getServerSession(authOptions)
-    
+
     if (!session?.user?.id) {
       console.log('[pdf] Unauthorized - no session')
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
@@ -48,7 +48,7 @@ export async function GET(
     if (document.s3Key) {
       console.log('[pdf] Fetching S3 signed URL for:', document.s3Key)
       const signedUrlResult = await getSignedDownloadUrl(document.s3Key, 3600)
-      
+
       if (signedUrlResult.success) {
         console.log('[pdf] Redirecting to S3 signed URL')
         return NextResponse.redirect(signedUrlResult.url)
@@ -76,7 +76,7 @@ export async function GET(
     // No binary data available
     console.log('[pdf] No binary data available for document')
     return NextResponse.json(
-      { 
+      {
         error: 'Document content not available',
         message: 'The document file could not be found in storage'
       },

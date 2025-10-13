@@ -6,7 +6,7 @@
  */
 function stripHtmlTags(html: string): string {
     if (!html) return ''
-    
+
     // First, decode common HTML entities
     let text = html
         .replace(/&amp;/g, '&')
@@ -16,13 +16,13 @@ function stripHtmlTags(html: string): string {
         .replace(/&#39;/g, "'")
         .replace(/&nbsp;/g, ' ')
         .replace(/&apos;/g, "'")
-    
+
     // Remove HTML tags but keep the content
     text = text.replace(/<[^>]*>/g, '')
-    
+
     // Clean up extra whitespace
     text = text.replace(/\s+/g, ' ').trim()
-    
+
     return text
 }
 

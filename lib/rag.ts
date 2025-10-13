@@ -266,7 +266,7 @@ export async function retrieveRelevantChunks(
     sessionId: string,
     query: string,
     topK: number = 5
-): Promise<Array<{ documentId: string; documentName: string; chunk: string; score: number; chunkIndex: number }>> {
+): Promise<Array<{ documentId: string; documentName: string; chunk: string; score: number; chunkIndex: number; pageNumber?: number }>> {
     try {
         // Get vector store for session
         const vectorDocs = vectorStores.get(sessionId)
@@ -288,6 +288,7 @@ export async function retrieveRelevantChunks(
             documentName: doc.documentName,
             chunk: doc.chunk,
             chunkIndex: doc.chunkIndex,
+            pageNumber: doc.pageNumber,
             score: cosineSimilarity(queryEmbedding, doc.embedding),
         }))
 

@@ -1,6 +1,6 @@
 'use client'
 
-import { Bot, User, FileText, Sparkles } from 'lucide-react'
+import { Bot, User, FileText, Sparkles, Download } from 'lucide-react'
 
 interface Message {
   id: string
@@ -55,7 +55,7 @@ export default function MessageBubble({ message, onViewPDF }: MessageBubbleProps
 
     // Split content by citation pattern [1], [2], etc.
     const citationPattern = /\[(\d+)\]/g
-    const parts: Array<{ text: string; citation?: number }> = []
+    const parts: Array<{ text?: string; citation?: number }> = []
     let lastIndex = 0
     let match
 
