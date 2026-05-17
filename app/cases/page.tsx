@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import {
     Plus,
     Search,
@@ -22,6 +23,7 @@ import {
     Filter as FilterIcon,
     Gavel
 } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import PageHeader from '@/components/ui/PageHeader'
 import Button from '@/components/ui/Button'
 import SearchBar from '@/components/ui/SearchBar'
@@ -64,6 +66,7 @@ interface CaseStats {
 }
 
 export default function CasesPage() {
+    const router = useRouter()
     const [cases, setCases] = useState<Case[]>([])
     const [stats, setStats] = useState<CaseStats>({
         total: 0,
@@ -379,9 +382,9 @@ export default function CasesPage() {
                                         const statusBadge = getStatusBadge(caseItem.status)
                                         return (
                                             <TableRow key={caseItem.id}>
-                                                <TableCell>
+                                                                <TableCell>
                                                     <div>
-                                                        <div className="font-semibold text-slate-900">{caseItem.title}</div>
+                                                        <Link href={`/cases/${caseItem.id}`} className="font-semibold text-slate-900 hover:text-indigo-600 transition-colors">{caseItem.title}</Link>
                                                         <div className="text-xs text-slate-500 mt-1">
                                                             {caseItem._count && (
                                                                 <>
@@ -437,7 +440,7 @@ export default function CasesPage() {
                                                             <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-slate-200 z-10">
                                                                 <button
                                                                     onClick={() => {
-                                                                        setSelectedCase(caseItem)
+                                                                        router.push(`/cases/${caseItem.id}`)
                                                                         setShowActionMenu(null)
                                                                     }}
                                                                     className="w-full px-4 py-2 text-left text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2 rounded-t-lg"

@@ -6,15 +6,11 @@ import { usePathname } from 'next/navigation'
 import { useSession, signOut } from 'next-auth/react'
 import {
   Home,
-  FileText,
   Users,
   Settings,
   ChevronLeft,
   ChevronRight,
   Scale,
-  Brain,
-  BookOpen,
-  MessageSquare,
   LogOut,
   User,
   Calendar,
@@ -24,20 +20,11 @@ import {
 
 const menuItems = [
   { name: 'Dashboard', icon: Home, href: '/' },
-  { name: 'AI Case Intake', icon: MessageSquare, href: '/ai-case-intake' },
-  { name: 'AI Case Assistant', icon: Brain, href: '/ai-case-assistant' },
-  { name: 'AI Drafting', icon: FileText, href: '/ai-drafting' },
-  { name: 'Dictation', icon: Mic, href: '/dictation' },
   { name: 'Cases', icon: Briefcase, href: '/cases' },
-  { name: 'Court Diary', icon: Calendar, href: '/court-diary' },
   { name: 'Clients', icon: Users, href: '/clients' },
-  { name: 'Documents', icon: FileText, href: '/documents' },
-  { name: 'Legal Library', icon: BookOpen, href: '/legal-library' },
-  { name: 'Legal Research', icon: Scale, href: '/legal-library-chat' },
-]
-
-const adminMenuItems = [
-  { name: 'Company Settings', icon: Settings, href: '/company-settings' },
+  { name: 'Court Diary', icon: Calendar, href: '/court-diary' },
+  { name: 'Dictation', icon: Mic, href: '/dictation' },
+  { name: 'Settings', icon: Settings, href: '/settings' },
 ]
 
 export default function Sidebar() {
@@ -102,37 +89,6 @@ export default function Sidebar() {
           </Link>
         ))}
 
-        {/* Premium Admin Section */}
-        {!collapsed && (
-          <div className="pt-5 mt-5 border-t border-slate-200/60">
-            <div className="px-2 mb-3">
-              <span className="text-xs font-black text-slate-500 uppercase tracking-widest">
-                Admin
-              </span>
-            </div>
-            {adminMenuItems.map((item) => (
-              <Link
-                key={item.name}
-                href={item.href}
-                className={`group flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 relative overflow-hidden ${isActive(item.href)
-                  ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold shadow-lg shadow-indigo-500/30'
-                  : 'text-slate-700 hover:bg-slate-50 hover:text-slate-900 font-semibold hover:shadow-md hover:-translate-x-1'
-                  }`}
-              >
-                {isActive(item.href) && (
-                  <div className="absolute inset-0 bg-white/10 shimmer"></div>
-                )}
-                <item.icon className={`flex-shrink-0 transition-transform duration-300 ${isActive(item.href) ? 'w-5 h-5 scale-110' : 'w-5 h-5 group-hover:scale-110'}`} strokeWidth={2.5} />
-                <span className="truncate relative z-10">{item.name}</span>
-                {isActive(item.href) && (
-                  <div className="ml-auto flex-shrink-0">
-                    <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
-                  </div>
-                )}
-              </Link>
-            ))}
-          </div>
-        )}
       </nav>
 
       {/* Premium User Profile */}

@@ -12,6 +12,23 @@ export async function GET(request: NextRequest) {
     }
 
     const searchParams = request.nextUrl.searchParams
+
+    // Single case lookup by ID
+    const id = searchParams.get('id')
+    if (id) {
+      const caseItem = await prisma.case.findFirst({
+        where: { id, userId: session.user.id },
+        include: {
+          documents: { select: { id: true, filename: true, originalName: true, size: true, createdAt: true, s3Url: true } },
+          _count: { select: { documents: true, chatSessions: true, hearings: true } }
+        }
+      })
+      if (!caseItem) {
+        return NextResponse.json({ message: 'Case not found' }, { status: 404 })
+      }
+      return NextResponse.json({ case: caseItem })
+    }
+
     const search = searchParams.get('search') || ''
     const status = searchParams.get('status') || 'all'
     const caseType = searchParams.get('type') || 'all'

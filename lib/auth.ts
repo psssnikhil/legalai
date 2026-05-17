@@ -60,6 +60,13 @@ export const authOptions: NextAuthOptions = {
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID || '',
       clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
+      authorization: {
+        params: {
+          scope: 'openid email profile https://www.googleapis.com/auth/drive.file',
+          access_type: 'offline',
+          prompt: 'consent',
+        },
+      },
     })
   ],
   session: {
@@ -107,6 +114,9 @@ export const authOptions: NextAuthOptions = {
           token.id = dbUser.id
           token.role = dbUser.role
         }
+        // Store Google tokens for Drive API access
+        if (account.access_token) token.googleAccessToken = account.access_token
+        if (account.refresh_token) token.googleRefreshToken = account.refresh_token
       } else if (user) {
         token.role = user.role
         token.id = user.id

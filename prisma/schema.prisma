@@ -107,6 +107,8 @@ model Case {
   startDate    DateTime @default(now())
   endDate      DateTime?
   isDraft      Boolean  @default(false)
+  googleDriveFolderId  String?  // Google Drive folder ID for this case
+  googleDriveFolderUrl String?  // Google Drive folder URL
   tags         String?  // JSON array of tags for filtering
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
