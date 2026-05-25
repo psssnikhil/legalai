@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -109,6 +109,7 @@ model Case {
   isDraft      Boolean  @default(false)
   googleDriveFolderId  String?  // Google Drive folder ID for this case
   googleDriveFolderUrl String?  // Google Drive folder URL
+  openaiVectorStoreId  String?  // OpenAI vector store ID for this case's documents
   tags         String?  // JSON array of tags for filtering
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
@@ -125,6 +126,7 @@ model Case {
 model ChatSession {
   id        String   @id @default(cuid())
   title     String?
+  openaiThreadId String?  // OpenAI Assistants API thread ID
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -159,6 +161,9 @@ model Document {
   binaryData  Bytes?   // Raw file binary data (for PDFs, images, etc.)
   s3Key       String?  // S3 key if stored in S3
   s3Url       String?  // S3 URL if stored in S3
+  openaiFileId        String? // OpenAI Files API file ID
+  googleDriveFileId   String? // Google Drive file ID
+  googleDriveFileUrl  String? // Google Drive shareable link
   analysis    String?  // AI analysis results
   createdAt   DateTime @default(now())
 

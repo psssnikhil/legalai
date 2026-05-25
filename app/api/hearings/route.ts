@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
     }
 
     if (clientName && clientName !== 'All Clients') {
-      where.clientName = { contains: clientName, mode: 'insensitive' }
+      where.clientName = { contains: clientName }
     }
     if (caseId && caseId !== 'All Cases') {
       where.caseId = caseId
@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
       where.district = district
     }
     if (court && court !== 'All Courts') {
-      where.court = { contains: court, mode: 'insensitive' }
+      where.court = { contains: court }
     }
     if (courtType && courtType !== 'All Court Types') {
       where.courtType = courtType

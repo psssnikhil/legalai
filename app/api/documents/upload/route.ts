@@ -138,6 +138,56 @@ export async function POST(request: NextRequest) {
 
         console.log(`[upload] Document saved to database with ID: ${document.id}${messageIdForDocument ? ` linked to message: ${messageIdForDocument}` : ''} (storage: ${s3Key ? 'S3' : 'Database'})`)
 
+        // Upload to Google Drive and OpenAI vector store in parallel (best-effort)
+        const cloudUpdates: Record<string, string> = {}
+
+        // Google Drive upload
+        try {
+          const { uploadFileToDrive } = await import('@/lib/google-drive-service')
+          let driveFolderId: string | null = null
+          if (caseId) {
+            const caseForDrive = await prisma.case.findUnique({
+              where: { id: caseId },
+              select: { googleDriveFolderId: true },
+            })
+            driveFolderId = caseForDrive?.googleDriveFolderId ?? null
+          }
+          const driveResult = await uploadFileToDrive(buffer, file.name, file.type, driveFolderId)
+          if (driveResult) {
+            cloudUpdates.googleDriveFileId = driveResult.fileId
+            cloudUpdates.googleDriveFileUrl = driveResult.fileUrl
+          }
+        } catch (driveErr) {
+          console.error('[upload] Drive upload failed:', driveErr)
+        }
+
+        // OpenAI vector store upload
+        if (caseId && process.env.OPENAI_API_KEY) {
+          try {
+            const caseForOpenAI = await prisma.case.findUnique({
+              where: { id: caseId },
+              select: { openaiVectorStoreId: true, title: true },
+            })
+            const { getOrCreateVectorStore, uploadFileToOpenAI } = await import('@/lib/openai-assistant')
+            let vectorStoreId = caseForOpenAI?.openaiVectorStoreId ?? null
+            if (!vectorStoreId && caseForOpenAI) {
+              vectorStoreId = await getOrCreateVectorStore(caseId, caseForOpenAI.title, null)
+              await prisma.case.update({ where: { id: caseId }, data: { openaiVectorStoreId: vectorStoreId } })
+            }
+            if (vectorStoreId) {
+              const openaiFileId = await uploadFileToOpenAI(buffer, file.name, file.type, vectorStoreId)
+              cloudUpdates.openaiFileId = openaiFileId
+            }
+          } catch (openaiErr) {
+            console.error('[upload] OpenAI upload failed:', openaiErr)
+          }
+        }
+
+        if (Object.keys(cloudUpdates).length > 0) {
+          await prisma.document.update({ where: { id: document.id }, data: cloudUpdates })
+          console.log(`[upload] Cloud IDs saved for document ${document.id}:`, Object.keys(cloudUpdates))
+        }
+
         results.push({
           success: true,
           filename: file.name,
