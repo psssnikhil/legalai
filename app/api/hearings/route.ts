@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
       where.district = district
     }
     if (court && court !== 'All Courts') {
-      where.court = { contains: court }
+      where.court = { contains: court, mode: 'insensitive' as const }
     }
     if (courtType && courtType !== 'All Court Types') {
       where.courtType = courtType

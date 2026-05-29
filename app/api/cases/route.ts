@@ -85,10 +85,10 @@ export async function GET(request: NextRequest) {
     if (search) {
       // Regular search
       where.OR = [
-        { title: { contains: search } },
-        { description: { contains: search } },
-        { clientName: { contains: search } },
-        { caseType: { contains: search } }
+        { title: { contains: search, mode: 'insensitive' as const } },
+        { description: { contains: search, mode: 'insensitive' as const } },
+        { clientName: { contains: search, mode: 'insensitive' as const } },
+        { caseType: { contains: search, mode: 'insensitive' as const } }
       ]
     }
 
