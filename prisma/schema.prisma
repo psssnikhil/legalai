@@ -6,8 +6,7 @@ generator client {
 }
 
 datasource db {
-  // Switch to "postgresql" for production (Vercel uses Neon)
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
