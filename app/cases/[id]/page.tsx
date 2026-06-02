@@ -39,6 +39,7 @@ interface Document {
   mimeType: string
   size: number
   createdAt: string
+  googleDriveFileUrl?: string
 }
 
 interface Hearing {
@@ -196,15 +197,19 @@ export default function CaseDetailPage() {
     setUploading(true)
     try {
       const formData = new FormData()
-      formData.append('file', file)
+      formData.append('files', file)
       formData.append('caseId', caseId)
 
       const res = await fetch('/api/documents/upload', { method: 'POST', body: formData })
+      const data = await res.json()
       if (res.ok) {
         fetchDocuments()
+      } else {
+        alert(data.message || 'Upload failed')
       }
     } catch (err) {
       console.error('Upload error:', err)
+      alert('Upload failed. Please try again.')
     } finally {
       setUploading(false)
     }
@@ -664,20 +669,34 @@ export default function CaseDetailPage() {
                   ref={fileInputRef}
                   type="file"
                   className="hidden"
-                  onChange={e => e.target.files?.[0] && uploadDocument(e.target.files[0])}
+                  multiple
+                  onChange={e => {
+                    const files = Array.from(e.target.files || [])
+                    files.forEach(f => uploadDocument(f))
+                    e.target.value = ''
+                  }}
                   accept=".pdf,.doc,.docx,.txt,.png,.jpg,.jpeg"
                 />
               </div>
             </div>
 
             {documents.length === 0 ? (
-              <div className="p-12 text-center">
-                <FileText className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-                <p className="text-gray-500 font-medium">No documents yet</p>
-                <p className="text-gray-400 text-sm mt-1">Upload documents to get started</p>
+              <div
+                className="p-12 text-center border-2 border-dashed border-gray-200 m-4 rounded-xl cursor-pointer hover:border-indigo-300 hover:bg-indigo-50 transition-colors"
+                onClick={() => fileInputRef.current?.click()}
+                onDragOver={e => e.preventDefault()}
+                onDrop={e => { e.preventDefault(); const f = e.dataTransfer.files[0]; if (f) uploadDocument(f) }}
+              >
+                <Upload className="w-10 h-10 text-gray-300 mx-auto mb-3" />
+                <p className="text-gray-500 font-medium">Drop a file here or click to upload</p>
+                <p className="text-gray-400 text-sm mt-1">PDF, Word, images up to 10MB</p>
               </div>
             ) : (
-              <div className="divide-y divide-gray-100">
+              <div
+                className="divide-y divide-gray-100"
+                onDragOver={e => e.preventDefault()}
+                onDrop={e => { e.preventDefault(); const f = e.dataTransfer.files[0]; if (f) uploadDocument(f) }}
+              >
                 {documents.map(doc => (
                   <div key={doc.id} className="flex items-center justify-between px-6 py-4 hover:bg-gray-50">
                     <div className="flex items-center gap-3">
@@ -690,14 +709,26 @@ export default function CaseDetailPage() {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <a
-                        href={`/api/documents/${doc.id}/pdf`}
-                        target="_blank"
-                        className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                        title="Download"
-                      >
-                        <Download className="w-4 h-4 text-gray-500" />
-                      </a>
+                      {doc.googleDriveFileUrl ? (
+                        <a
+                          href={doc.googleDriveFileUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="p-2 hover:bg-yellow-50 rounded-lg transition-colors"
+                          title="Open in Google Drive"
+                        >
+                          <FolderOpen className="w-4 h-4 text-yellow-500" />
+                        </a>
+                      ) : (
+                        <a
+                          href={`/api/documents/${doc.id}/pdf`}
+                          target="_blank"
+                          className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                          title="Download"
+                        >
+                          <Download className="w-4 h-4 text-gray-500" />
+                        </a>
+                      )}
                       <button
                         onClick={() => deleteDocument(doc.id)}
                         className="p-2 hover:bg-red-50 rounded-lg transition-colors"
