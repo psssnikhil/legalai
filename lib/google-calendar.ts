@@ -49,19 +49,21 @@ async function getAccessToken(userId: string): Promise<string | null> {
 
 interface HearingEvent {
   title: string
-  hearingDate: string   // ISO date string
-  startTime: string     // "HH:MM"
-  endTime?: string      // "HH:MM"
-  court?: string
-  clientName?: string
-  caseTitle?: string
-  notes?: string
+  hearingDate: Date | string
+  startTime: string | null
+  endTime?: string | null
+  court?: string | null
+  clientName?: string | null
+  caseTitle?: string | null
+  notes?: string | null
 }
 
 function buildEventBody(h: HearingEvent) {
-  const date = h.hearingDate.split('T')[0] // YYYY-MM-DD
-  const start = `${date}T${h.startTime}:00`
-  const endTime = h.endTime || addHour(h.startTime)
+  const dateStr = h.hearingDate instanceof Date ? h.hearingDate.toISOString() : h.hearingDate
+  const date = dateStr.split('T')[0] // YYYY-MM-DD
+  const startTime = h.startTime || '10:00'
+  const start = `${date}T${startTime}:00`
+  const endTime = h.endTime || addHour(startTime)
   const end = `${date}T${endTime}:00`
 
   const description = [

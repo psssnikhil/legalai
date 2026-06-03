@@ -44,7 +44,7 @@ export async function sendEmailToUser(
 
 export function buildDailyDigestEmail(data: {
   userName: string
-  todayHearings: { title: string; court: string; startTime: string; clientName: string }[]
+  todayHearings: { title: string; court: string | null; startTime: string | null; clientName: string | null }[]
   upcomingDeadlines: { caseTitle: string; type: string; date: string }[]
   pendingTasks: number
 }) {

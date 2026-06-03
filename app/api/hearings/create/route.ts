@@ -79,6 +79,7 @@ export async function POST(request: NextRequest) {
     })
 
     // Sync to Google Calendar (best-effort, don't fail on error)
+    let calendarEventId: string | null = null
     try {
       const eventId = await createCalendarEvent(session.user.id, newHearing)
       if (eventId) {
@@ -86,7 +87,7 @@ export async function POST(request: NextRequest) {
           where: { id: newHearing.id },
           data: { googleCalendarEventId: eventId }
         })
-        newHearing.googleCalendarEventId = eventId
+        calendarEventId = eventId
       }
     } catch (calErr) {
       console.warn('[Calendar] Could not create calendar event:', calErr)
@@ -94,7 +95,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       message: 'Hearing created successfully',
-      hearing: newHearing
+      hearing: { ...newHearing, googleCalendarEventId: calendarEventId }
     })
 
   } catch (error) {
