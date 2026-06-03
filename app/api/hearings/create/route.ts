@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { createCalendarEvent } from '@/lib/google-calendar'
 
 export async function POST(request: NextRequest) {
   try {
@@ -76,6 +77,20 @@ export async function POST(request: NextRequest) {
         }
       }
     })
+
+    // Sync to Google Calendar (best-effort, don't fail on error)
+    try {
+      const eventId = await createCalendarEvent(session.user.id, newHearing)
+      if (eventId) {
+        await prisma.hearing.update({
+          where: { id: newHearing.id },
+          data: { googleCalendarEventId: eventId }
+        })
+        newHearing.googleCalendarEventId = eventId
+      }
+    } catch (calErr) {
+      console.warn('[Calendar] Could not create calendar event:', calErr)
+    }
 
     return NextResponse.json({
       message: 'Hearing created successfully',

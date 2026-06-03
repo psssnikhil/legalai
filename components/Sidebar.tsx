@@ -16,7 +16,8 @@ import {
   Calendar,
   Briefcase,
   Mic,
-  Search
+  Search,
+  ClipboardList
 } from 'lucide-react'
 
 const menuItems = [
@@ -25,6 +26,7 @@ const menuItems = [
   { name: 'Clients', icon: Users, href: '/clients' },
   { name: 'Court Diary', icon: Calendar, href: '/court-diary' },
   { name: 'eCourts', icon: Search, href: '/ecourts' },
+  { name: 'Intake', icon: ClipboardList, href: '/intake' },
   { name: 'Dictation', icon: Mic, href: '/dictation' },
   { name: 'Settings', icon: Settings, href: '/settings' },
 ]

@@ -61,6 +61,7 @@ model User {
   hearings Hearing[]
   clients  Client[]
   settings UserSettings?
+  caseNotes CaseNote[]
 }
 
 model UserSettings {
@@ -107,20 +108,34 @@ model Case {
   startDate    DateTime @default(now())
   endDate      DateTime?
   isDraft      Boolean  @default(false)
-  googleDriveFolderId  String?  // Google Drive folder ID for this case
-  googleDriveFolderUrl String?  // Google Drive folder URL
-  openaiVectorStoreId  String?  // OpenAI vector store ID for this case's documents
-  tags         String?  // JSON array of tags for filtering
+  googleDriveFolderId  String?
+  googleDriveFolderUrl String?
+  openaiVectorStoreId  String?
+  tags         String?
+
+  // Opposite party info
+  oppositeParty   String?
+  oppositeCounsel String?
+  courtFileNumber String?
+  firNumber       String?
+
+  // Deadlines
+  limitationDate  DateTime?
+  filingDeadline  DateTime?
+  replyDeadline   DateTime?
+
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
   userId String
   user   User   @relation(fields: [userId], references: [id])
-  
+
   chatSessions ChatSession[]
-  documents   Document[]
-  analyses    CaseAnalysis[]
-  hearings    Hearing[]
+  documents    Document[]
+  analyses     CaseAnalysis[]
+  hearings     Hearing[]
+  tasks        Task[]
+  notes        CaseNote[]
 }
 
 model ChatSession {
@@ -238,12 +253,15 @@ model Hearing {
   
   // Additional Details
   notes        String?
-  reminders    String?  // JSON array of reminder times
-  
+  reminders    String?
+
+  // Google Calendar
+  googleCalendarEventId String?
+
   // Metadata
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
-  
+
   userId       String
   user         User     @relation(fields: [userId], references: [id])
   
@@ -286,4 +304,29 @@ model Client {
   @@index([userId])
   @@index([status])
   @@index([email])
+}
+
+model Task {
+  id        String    @id @default(cuid())
+  title     String
+  done      Boolean   @default(false)
+  dueDate   DateTime?
+  caseId    String
+  case      Case      @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([caseId])
+}
+
+model CaseNote {
+  id        String   @id @default(cuid())
+  content   String
+  caseId    String
+  case      Case     @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@index([caseId])
 }

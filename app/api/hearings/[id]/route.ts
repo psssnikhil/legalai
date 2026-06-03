@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { updateCalendarEvent, deleteCalendarEvent } from '@/lib/google-calendar'
 
 // GET single hearing by ID
 export async function GET(
@@ -127,6 +128,15 @@ export async function PUT(
       }
     })
 
+    // Sync to Google Calendar (best-effort)
+    try {
+      if (existingHearing.googleCalendarEventId) {
+        await updateCalendarEvent(session.user.id, existingHearing.googleCalendarEventId, updatedHearing)
+      }
+    } catch (calErr) {
+      console.warn('[Calendar] Could not update calendar event:', calErr)
+    }
+
     return NextResponse.json({
       message: 'Hearing updated successfully',
       hearing: updatedHearing
@@ -163,6 +173,15 @@ export async function DELETE(
 
     if (!existingHearing) {
       return NextResponse.json({ message: 'Hearing not found' }, { status: 404 })
+    }
+
+    // Delete Google Calendar event (best-effort)
+    try {
+      if (existingHearing.googleCalendarEventId) {
+        await deleteCalendarEvent(session.user.id, existingHearing.googleCalendarEventId)
+      }
+    } catch (calErr) {
+      console.warn('[Calendar] Could not delete calendar event:', calErr)
     }
 
     // Delete the hearing

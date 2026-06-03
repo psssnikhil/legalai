@@ -11,7 +11,7 @@ import {
   BookOpen, Scale, Mic
 } from 'lucide-react'
 
-type Tab = 'overview' | 'documents' | 'hearings' | 'chat'
+type Tab = 'overview' | 'documents' | 'hearings' | 'notes' | 'chat'
 
 interface Case {
   id: string
@@ -28,8 +28,30 @@ interface Case {
   caseValue?: number
   googleDriveFolderId?: string
   googleDriveFolderUrl?: string
+  oppositeParty?: string
+  oppositeCounsel?: string
+  courtFileNumber?: string
+  firNumber?: string
+  limitationDate?: string
+  filingDeadline?: string
+  replyDeadline?: string
   createdAt: string
   updatedAt: string
+}
+
+interface Task {
+  id: string
+  title: string
+  done: boolean
+  dueDate?: string
+  createdAt: string
+}
+
+interface Note {
+  id: string
+  content: string
+  createdAt: string
+  user: { name: string | null }
 }
 
 interface Document {
@@ -116,6 +138,16 @@ export default function CaseDetailPage() {
   const [creatingDriveFolder, setCreatingDriveFolder] = useState(false)
   const [driveMessage, setDriveMessage] = useState('')
 
+  // Tasks state
+  const [tasks, setTasks] = useState<Task[]>([])
+  const [newTaskTitle, setNewTaskTitle] = useState('')
+  const [addingTask, setAddingTask] = useState(false)
+
+  // Notes state
+  const [notes, setNotes] = useState<Note[]>([])
+  const [newNote, setNewNote] = useState('')
+  const [addingNote, setAddingNote] = useState(false)
+
   useEffect(() => {
     fetchCase()
   }, [caseId])
@@ -124,7 +156,13 @@ export default function CaseDetailPage() {
     if (activeTab === 'documents') fetchDocuments()
     if (activeTab === 'hearings') fetchHearings()
     if (activeTab === 'chat') fetchChatHistory()
+    if (activeTab === 'notes') fetchNotes()
   }, [activeTab])
+
+  useEffect(() => {
+    // Load tasks on mount for overview tab
+    fetchTasks()
+  }, [caseId])
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -161,6 +199,77 @@ export default function CaseDetailPage() {
       const data = await res.json()
       setHearings(data.hearings || [])
     }
+  }
+
+  const fetchTasks = async () => {
+    const res = await fetch(`/api/tasks?caseId=${caseId}`)
+    if (res.ok) {
+      const data = await res.json()
+      setTasks(data.tasks || [])
+    }
+  }
+
+  const fetchNotes = async () => {
+    const res = await fetch(`/api/notes?caseId=${caseId}`)
+    if (res.ok) {
+      const data = await res.json()
+      setNotes(data.notes || [])
+    }
+  }
+
+  const addTask = async () => {
+    if (!newTaskTitle.trim()) return
+    setAddingTask(true)
+    try {
+      const res = await fetch('/api/tasks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: newTaskTitle.trim(), caseId })
+      })
+      if (res.ok) {
+        setNewTaskTitle('')
+        fetchTasks()
+      }
+    } finally {
+      setAddingTask(false)
+    }
+  }
+
+  const toggleTask = async (taskId: string, done: boolean) => {
+    await fetch('/api/tasks', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: taskId, done: !done })
+    })
+    fetchTasks()
+  }
+
+  const deleteTask = async (taskId: string) => {
+    await fetch(`/api/tasks?id=${taskId}`, { method: 'DELETE' })
+    fetchTasks()
+  }
+
+  const addNote = async () => {
+    if (!newNote.trim()) return
+    setAddingNote(true)
+    try {
+      const res = await fetch('/api/notes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: newNote.trim(), caseId })
+      })
+      if (res.ok) {
+        setNewNote('')
+        fetchNotes()
+      }
+    } finally {
+      setAddingNote(false)
+    }
+  }
+
+  const deleteNote = async (noteId: string) => {
+    await fetch(`/api/notes?id=${noteId}`, { method: 'DELETE' })
+    fetchNotes()
   }
 
   const fetchChatHistory = async () => {
@@ -384,6 +493,7 @@ export default function CaseDetailPage() {
             { id: 'overview', label: 'Overview', icon: Briefcase, count: null },
             { id: 'documents', label: 'Documents', icon: FileText, count: documents.length || null },
             { id: 'hearings', label: 'Hearings', icon: Calendar, count: hearings.length || null },
+            { id: 'notes', label: 'Notes', icon: BookOpen, count: notes.length || null },
             { id: 'chat', label: 'AI Chat', icon: MessageSquare, count: chatMessages.length || null },
           ].map(tab => (
             <button
@@ -503,6 +613,69 @@ export default function CaseDetailPage() {
                           placeholder="Attorney name"
                         />
                       </div>
+                      <div>
+                        <label className="block text-xs font-medium text-gray-500 mb-1">Opposite Party</label>
+                        <input
+                          value={editForm.oppositeParty || ''}
+                          onChange={e => setEditForm({ ...editForm, oppositeParty: e.target.value })}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                          placeholder="Opposing party name"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-gray-500 mb-1">Opposite Counsel</label>
+                        <input
+                          value={editForm.oppositeCounsel || ''}
+                          onChange={e => setEditForm({ ...editForm, oppositeCounsel: e.target.value })}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                          placeholder="Opposing advocate"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-gray-500 mb-1">Court File No.</label>
+                        <input
+                          value={editForm.courtFileNumber || ''}
+                          onChange={e => setEditForm({ ...editForm, courtFileNumber: e.target.value })}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                          placeholder="File number"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-gray-500 mb-1">FIR Number</label>
+                        <input
+                          value={editForm.firNumber || ''}
+                          onChange={e => setEditForm({ ...editForm, firNumber: e.target.value })}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                          placeholder="FIR number (criminal)"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-gray-500 mb-1">Limitation Date</label>
+                        <input
+                          type="date"
+                          value={editForm.limitationDate ? editForm.limitationDate.slice(0, 10) : ''}
+                          onChange={e => setEditForm({ ...editForm, limitationDate: e.target.value })}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-gray-500 mb-1">Filing Deadline</label>
+                        <input
+                          type="date"
+                          value={editForm.filingDeadline ? editForm.filingDeadline.slice(0, 10) : ''}
+                          onChange={e => setEditForm({ ...editForm, filingDeadline: e.target.value })}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-gray-500 mb-1">Reply Deadline</label>
+                        <input
+                          type="date"
+                          value={editForm.replyDeadline ? editForm.replyDeadline.slice(0, 10) : ''}
+                          onChange={e => setEditForm({ ...editForm, replyDeadline: e.target.value })}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                        />
+                      </div>
                     </div>
                   </div>
                 ) : (
@@ -519,21 +692,99 @@ export default function CaseDetailPage() {
                         <span className="text-gray-500">Assigned To</span>
                         <p className="font-medium text-gray-900 mt-0.5">{caseData.assignedTo || '—'}</p>
                       </div>
-                      <div>
-                        <span className="text-gray-500">Next Hearing</span>
-                        <p className="font-medium text-gray-900 mt-0.5">
-                          {caseData.nextHearing ? new Date(caseData.nextHearing).toLocaleDateString() : '—'}
-                        </p>
-                      </div>
-                      <div>
-                        <span className="text-gray-500">Case Value</span>
-                        <p className="font-medium text-gray-900 mt-0.5">
-                          {caseData.caseValue ? `$${caseData.caseValue.toLocaleString()}` : '—'}
-                        </p>
-                      </div>
+                      {caseData.oppositeParty && (
+                        <div>
+                          <span className="text-gray-500">Opposite Party</span>
+                          <p className="font-medium text-gray-900 mt-0.5">{caseData.oppositeParty}</p>
+                        </div>
+                      )}
+                      {caseData.oppositeCounsel && (
+                        <div>
+                          <span className="text-gray-500">Opposite Counsel</span>
+                          <p className="font-medium text-gray-900 mt-0.5">{caseData.oppositeCounsel}</p>
+                        </div>
+                      )}
+                      {caseData.courtFileNumber && (
+                        <div>
+                          <span className="text-gray-500">Court File No.</span>
+                          <p className="font-medium text-gray-900 mt-0.5">{caseData.courtFileNumber}</p>
+                        </div>
+                      )}
+                      {caseData.firNumber && (
+                        <div>
+                          <span className="text-gray-500">FIR Number</span>
+                          <p className="font-medium text-gray-900 mt-0.5">{caseData.firNumber}</p>
+                        </div>
+                      )}
+                      {caseData.limitationDate && (
+                        <div>
+                          <span className="text-gray-500">Limitation Date</span>
+                          <p className="font-medium text-red-700 mt-0.5">{new Date(caseData.limitationDate).toLocaleDateString('en-IN')}</p>
+                        </div>
+                      )}
+                      {caseData.filingDeadline && (
+                        <div>
+                          <span className="text-gray-500">Filing Deadline</span>
+                          <p className="font-medium text-orange-700 mt-0.5">{new Date(caseData.filingDeadline).toLocaleDateString('en-IN')}</p>
+                        </div>
+                      )}
+                      {caseData.replyDeadline && (
+                        <div>
+                          <span className="text-gray-500">Reply Deadline</span>
+                          <p className="font-medium text-orange-700 mt-0.5">{new Date(caseData.replyDeadline).toLocaleDateString('en-IN')}</p>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
+              </div>
+
+              {/* Tasks */}
+              <div className="bg-white rounded-xl border border-gray-200 p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-lg font-semibold text-gray-900">Tasks</h2>
+                  <span className="text-xs text-gray-500">{tasks.filter(t => t.done).length}/{tasks.length} done</span>
+                </div>
+                <div className="space-y-2 mb-3">
+                  {tasks.length === 0 && (
+                    <p className="text-sm text-gray-400 py-2 text-center">No tasks yet</p>
+                  )}
+                  {tasks.map(task => (
+                    <div key={task.id} className="flex items-center gap-3 group">
+                      <button
+                        onClick={() => toggleTask(task.id, task.done)}
+                        className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors ${task.done ? 'bg-green-500 border-green-500' : 'border-gray-300 hover:border-indigo-400'}`}
+                      >
+                        {task.done && <Check className="w-3 h-3 text-white" />}
+                      </button>
+                      <span className={`flex-1 text-sm ${task.done ? 'line-through text-gray-400' : 'text-gray-700'}`}>
+                        {task.title}
+                      </span>
+                      <button
+                        onClick={() => deleteTask(task.id)}
+                        className="opacity-0 group-hover:opacity-100 p-1 hover:bg-red-50 rounded transition-all"
+                      >
+                        <X className="w-3 h-3 text-red-400" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex items-center gap-2">
+                  <input
+                    value={newTaskTitle}
+                    onChange={e => setNewTaskTitle(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && addTask()}
+                    placeholder="Add a task..."
+                    className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  />
+                  <button
+                    onClick={addTask}
+                    disabled={addingTask || !newTaskTitle.trim()}
+                    className="px-3 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:opacity-50"
+                  >
+                    {addingTask ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+                  </button>
+                </div>
               </div>
 
               {/* Quick Actions */}
@@ -881,6 +1132,62 @@ export default function CaseDetailPage() {
                           {hearing.priority}
                         </span>
                       </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* NOTES TAB */}
+        {activeTab === 'notes' && (
+          <div className="space-y-4">
+            <div className="bg-white rounded-xl border border-gray-200 p-6">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">Add Note</h2>
+              <textarea
+                value={newNote}
+                onChange={e => setNewNote(e.target.value)}
+                rows={3}
+                placeholder="Write a case note..."
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              />
+              <div className="flex justify-end mt-3">
+                <button
+                  onClick={addNote}
+                  disabled={addingNote || !newNote.trim()}
+                  className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:opacity-50"
+                >
+                  {addingNote ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+                  Add Note
+                </button>
+              </div>
+            </div>
+
+            {notes.length === 0 ? (
+              <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
+                <BookOpen className="w-10 h-10 text-gray-300 mx-auto mb-3" />
+                <p className="text-gray-500 font-medium">No notes yet</p>
+                <p className="text-gray-400 text-sm mt-1">Add your first case note above</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {notes.map(note => (
+                  <div key={note.id} className="bg-white rounded-xl border border-gray-200 p-5">
+                    <div className="flex items-start justify-between gap-3">
+                      <p className="text-sm text-gray-800 whitespace-pre-wrap flex-1">{note.content}</p>
+                      <button
+                        onClick={() => deleteNote(note.id)}
+                        className="p-1.5 hover:bg-red-50 rounded-lg transition-colors flex-shrink-0"
+                      >
+                        <Trash2 className="w-4 h-4 text-red-400" />
+                      </button>
+                    </div>
+                    <div className="flex items-center gap-2 mt-3 text-xs text-gray-400">
+                      <User className="w-3 h-3" />
+                      <span>{note.user?.name || 'Unknown'}</span>
+                      <span>•</span>
+                      <span>{new Date(note.createdAt).toLocaleDateString('en-IN')} {new Date(note.createdAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}</span>
                     </div>
                   </div>
                 ))}

@@ -62,7 +62,7 @@ export const authOptions: NextAuthOptions = {
       clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
       authorization: {
         params: {
-          scope: 'openid email profile https://www.googleapis.com/auth/drive.file',
+          scope: 'openid email profile https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/calendar',
           access_type: 'offline',
           prompt: 'consent',
         },
@@ -97,6 +97,30 @@ export const authOptions: NextAuthOptions = {
           // Store the database ID in the user object for the JWT callback
           user.id = dbUser.id
           user.role = dbUser.role
+
+          // Upsert OAuth tokens so server-side APIs (Drive, Calendar) can use them
+          if (account?.access_token) {
+            await prisma.account.upsert({
+              where: { provider_providerAccountId: { provider: 'google', providerAccountId: account.providerAccountId } },
+              update: {
+                access_token: account.access_token,
+                refresh_token: account.refresh_token ?? undefined,
+                expires_at: account.expires_at ?? undefined,
+              },
+              create: {
+                userId: dbUser.id,
+                type: account.type,
+                provider: account.provider,
+                providerAccountId: account.providerAccountId,
+                access_token: account.access_token,
+                refresh_token: account.refresh_token,
+                expires_at: account.expires_at,
+                token_type: account.token_type,
+                scope: account.scope,
+                id_token: account.id_token,
+              },
+            })
+          }
         } catch (error) {
           console.error('Error creating Google user:', error)
           return false
