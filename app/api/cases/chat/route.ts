@@ -117,7 +117,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ message: aiResponse, sessionId: chatSession.id })
   } catch (error) {
     console.error('Case chat error:', error)
-    return NextResponse.json({ error: 'An error occurred' }, { status: 500 })
+    const message = error instanceof Error ? error.message : String(error)
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }
 
